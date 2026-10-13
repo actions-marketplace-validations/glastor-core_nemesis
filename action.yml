@@ -1,150 +1,150 @@
-name: 'Nemesis Universal Security, Hygiene & Compliance Auditor'
-description: 'Automated DevSecOps security, hygiene, license compliance, auto-clean commits & 1-click PR suggestions powered by Deno & TypeScript'
-author: 'Nemesis Team'
+name: "Nemesis Universal Security, Hygiene & Compliance Auditor"
+description: "Automated DevSecOps security, hygiene, license compliance, auto-clean commits & 1-click PR suggestions powered by Deno & TypeScript"
+author: "Nemesis Team"
 branding:
-  icon: 'shield'
-  color: 'purple'
+  icon: "shield"
+  color: "purple"
 
 inputs:
   target-path:
-    description: 'Path of repository or directory to audit'
+    description: "Path of repository or directory to audit"
     required: false
-    default: '.'
+    default: "."
   scan-secrets:
-    description: 'Enable Gitleaks secret scanning'
+    description: "Enable Gitleaks secret scanning"
     required: false
-    default: 'true'
+    default: "true"
   scan-sast:
-    description: 'Enable Semgrep SAST scanning'
+    description: "Enable Semgrep SAST scanning"
     required: false
-    default: 'true'
+    default: "true"
   scan-sca:
-    description: 'Enable Trivy SCA/dependency scanning'
+    description: "Enable Trivy SCA/dependency scanning"
     required: false
-    default: 'true'
+    default: "true"
   scan-hygiene:
-    description: 'Enable repository hygiene and junk file detection'
+    description: "Enable repository hygiene and junk file detection"
     required: false
-    default: 'true'
+    default: "true"
   scan-licenses:
-    description: 'Enable open source license compliance checks'
+    description: "Enable open source license compliance checks"
     required: false
-    default: 'true'
+    default: "true"
   generate-sbom:
-    description: 'Generate CycloneDX SBOM report'
+    description: "Generate CycloneDX SBOM report"
     required: false
-    default: 'true'
+    default: "true"
   diff-mode:
-    description: 'Only scan files modified in current Pull Request/commit'
+    description: "Only scan files modified in current Pull Request/commit"
     required: false
-    default: 'false'
+    default: "false"
   diff-base-ref:
-    description: 'Base Git ref for differential scan'
+    description: "Base Git ref for differential scan"
     required: false
-    default: 'origin/main'
+    default: "origin/main"
   auto-fix:
-    description: 'Automatically remove toxic files and commit/push cleanups'
+    description: "Automatically remove toxic files and commit/push cleanups"
     required: false
-    default: 'false'
+    default: "false"
   pr-suggestions:
-    description: 'Generate 1-click interactive GitHub PR Review Suggestions'
+    description: "Generate 1-click interactive GitHub PR Review Suggestions"
     required: false
-    default: 'true'
+    default: "true"
   max-file-size-mb:
-    description: 'Max allowed file size before warning in MB'
+    description: "Max allowed file size before warning in MB"
     required: false
-    default: '10'
+    default: "10"
   require-license:
-    description: 'Require a LICENSE file in repository root'
+    description: "Require a LICENSE file in repository root"
     required: false
-    default: 'false'
+    default: "false"
   fail-on-critical:
-    description: 'Fail the step if CRITICAL vulnerabilities are found'
+    description: "Fail the step if CRITICAL vulnerabilities are found"
     required: false
-    default: 'false'
+    default: "false"
   fail-on-high:
-    description: 'Fail the step if HIGH or CRITICAL vulnerabilities are found'
+    description: "Fail the step if HIGH or CRITICAL vulnerabilities are found"
     required: false
-    default: 'false'
+    default: "false"
   fail-on-medium:
-    description: 'Fail the step if MEDIUM or higher vulnerabilities are found'
+    description: "Fail the step if MEDIUM or higher vulnerabilities are found"
     required: false
-    default: 'false'
+    default: "false"
   post-pr-comment:
-    description: 'Post a Markdown summary comment on the Pull Request'
+    description: "Post a Markdown summary comment on the Pull Request"
     required: false
-    default: 'true'
+    default: "true"
   create-annotations:
-    description: 'Annotate code lines directly on GitHub Pull Request diff'
+    description: "Annotate code lines directly on GitHub Pull Request diff"
     required: false
-    default: 'true'
+    default: "true"
   upload-sarif:
-    description: 'Upload SARIF results to GitHub Security tab'
+    description: "Upload SARIF results to GitHub Security tab"
     required: false
-    default: 'true'
+    default: "true"
   output-dir:
-    description: 'Directory where audit reports are saved'
+    description: "Directory where audit reports are saved"
     required: false
-    default: '.nemesis-reports'
+    default: ".nemesis-reports"
   config-file:
-    description: 'Path to .nemesis.yml configuration / suppression file'
+    description: "Path to .nemesis.yml configuration / suppression file"
     required: false
-    default: ''
+    default: ""
   slack-webhook-url:
-    description: 'Slack Webhook URL for audit notifications'
+    description: "Slack Webhook URL for audit notifications"
     required: false
-    default: ''
+    default: ""
   discord-webhook-url:
-    description: 'Discord Webhook URL for audit notifications'
+    description: "Discord Webhook URL for audit notifications"
     required: false
-    default: ''
+    default: ""
   github-token:
-    description: 'GitHub token for PR commenting and API access'
+    description: "GitHub token for PR commenting and API access"
     required: false
     default: ${{ github.token }}
   semgrep-rules:
-    description: 'Semgrep rule pack or config path'
+    description: "Semgrep rule pack or config path"
     required: false
-    default: 'p/security-audit'
+    default: "p/security-audit"
   trivy-severity:
-    description: 'Trivy severities to capture'
+    description: "Trivy severities to capture"
     required: false
-    default: 'UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL'
+    default: "UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL"
 
 outputs:
   passed:
-    description: 'Whether the audit passed threshold criteria (true/false)'
+    description: "Whether the audit passed threshold criteria (true/false)"
     value: ${{ steps.run-nemesis.outputs.passed }}
   total-findings:
-    description: 'Total number of findings discovered'
+    description: "Total number of findings discovered"
     value: ${{ steps.run-nemesis.outputs.total-findings }}
   critical-count:
-    description: 'Number of critical findings'
+    description: "Number of critical findings"
     value: ${{ steps.run-nemesis.outputs.critical-count }}
   high-count:
-    description: 'Number of high findings'
+    description: "Number of high findings"
     value: ${{ steps.run-nemesis.outputs.high-count }}
   ignored-count:
-    description: 'Number of findings suppressed via .nemesis.yml'
+    description: "Number of findings suppressed via .nemesis.yml"
     value: ${{ steps.run-nemesis.outputs.ignored-count }}
   auto-fixed-count:
-    description: 'Number of issues resolved automatically'
+    description: "Number of issues resolved automatically"
     value: ${{ steps.run-nemesis.outputs.auto-fixed-count }}
   report-json:
-    description: 'Path to generated JSON report'
+    description: "Path to generated JSON report"
     value: ${{ steps.run-nemesis.outputs.report-json }}
   report-md:
-    description: 'Path to generated Markdown report'
+    description: "Path to generated Markdown report"
     value: ${{ steps.run-nemesis.outputs.report-md }}
   report-sarif:
-    description: 'Path to generated SARIF report'
+    description: "Path to generated SARIF report"
     value: ${{ steps.run-nemesis.outputs.report-sarif }}
   sbom-file:
-    description: 'Path to generated CycloneDX SBOM'
+    description: "Path to generated CycloneDX SBOM"
     value: ${{ steps.run-nemesis.outputs.sbom-file }}
 
 runs:
-  using: 'composite'
+  using: "composite"
   steps:
     - name: Setup Deno Runtime
       uses: denoland/setup-deno@v2
@@ -222,5 +222,5 @@ runs:
       uses: github/codeql-action/upload-sarif@v3
       with:
         sarif_file: ${{ inputs.output-dir }}/nemesis-report.sarif
-        category: 'nemesis-security-audit'
+        category: "nemesis-security-audit"
       continue-on-error: true

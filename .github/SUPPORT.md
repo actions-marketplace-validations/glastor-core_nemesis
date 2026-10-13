@@ -1,26 +1,40 @@
-## 🛠 Soporte, Mantenimiento y Ecosistema
+# 🛠️ Soporte, Asistencia y Ecosistema Nemesis
 
-Para garantizar la escalabilidad de `**GLASTOR-DEV** la division de desarrollo de GLASTOR®` y una **DX (Developer Experience)** de primer nivel, hemos establecido protocolos de asistencia diseñados para optimizar el triaje y la resolución de consultas técnicas.
+Para garantizar la máxima confiabilidad operativa de **Nemesis** y brindar una experiencia de desarrollador (DX) de excelencia dentro de `**GLASTOR-DEV** (división de desarrollo de GLASTOR®)`, disponemos de canales oficiales organizados según el tipo de consulta.
 
-### 💬 Centro de Conocimiento y Colaboración
+---
 
-Utiliza este espacio para consultas de arquitectura, optimización de flujos de trabajo y discusiones sobre el roadmap. Buscamos centralizar el conocimiento asíncrono para beneficiar a toda la comunidad de ingenieros.
+## 💬 Centro de Discusión y Arquitectura
 
-- **[Acceder a GitHub Discussions](https://github.com/glastor-dev/glastor-deno/discussions)** — _Ideal para: Consultas técnicas, mejores prácticas y feedback de diseño._
+Utiliza este espacio para dudas de implementación, configuración avanzada en pipelines de GitHub Actions, sugerencias de nuevas reglas de higiene o intercambio de mejores prácticas DevSecOps.
 
-### ⚡ Triaje de Incidencias y Feature Requests
+- **[GitHub Discussions de Nemesis](https://github.com/glastor-dev/nemesis/discussions)**
+  - *Ideal para:* Consultas técnicas, ideas de mejora, casos de uso y feedback general.
 
-Nuestro sistema de _issue tracking_ sigue estándares de alta fidelidad. Si has detectado una regresión o tienes una propuesta de alto impacto, inicia el proceso aquí.
+---
 
-- **[Abrir un Ticket en GitHub Issues](https://github.com/glastor-dev/glastor-deno/issues)**
-- **Nota:** Priorizamos reportes que incluyan logs técnicos, entorno de ejecución y pasos mínimos de reproducción.
+## ⚡ Reporte de Bugs y Solicitud de Mejoras
 
-### 🛡️ Protocolo de Seguridad y Divulgación Responsable
+Si detectas un comportamiento anómalo, un falso positivo en algún scanner o requieres una funcionalidad específica:
 
-La integridad del código es nuestra prioridad absoluta. Ante el hallazgo de vulnerabilidades críticas, solicitamos seguir nuestro protocolo de seguridad de forma privada para evitar vectores de ataque en entornos productivos:
+- **[Abrir un Ticket en GitHub Issues](https://github.com/glastor-dev/nemesis/issues)**
+- **Recomendación:** Proporciona logs de ejecución (`deno task start --path ...`), versión de Deno y archivo `.nemesis.yml` si aplica.
 
-1. Revisa nuestra **[Política de Seguridad](https://github.com/glastor-dev/glastor-deno/security/policy)**.
-2. Envía un reporte cifrado a: **[glastor.info@gmail.com](mailto:glastor.info@gmail.com)**.
+---
+
+## 🛡️ Reporte Confidencial de Seguridad
+
+Para reportar vulnerabilidades críticas de seguridad o fallos en el manejo de tokens y secretos, **no utilices issues públicos**:
+
+1. Consulta nuestra **[Política de Seguridad](https://github.com/glastor-dev/nemesis/security/policy)**.
+2. Abre un reporte privado en **[GitHub Security Advisories](https://github.com/glastor-dev/nemesis/security/advisories/new)** o contacta a: **[glastor.info@gmail.com](mailto:glastor.info@gmail.com)**.
+
+---
+
+## 📞 Comunicación Directa y Corporativa
+
+- **Email Oficial:** [glastor.info@gmail.com](mailto:glastor.info@gmail.com)
+- **Telegram Directo:** [@zerhocool](https://t.me/zerhocool)
 
 ---
 

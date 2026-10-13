@@ -1,18 +1,36 @@
-# Guía de Contribución y Gobernanza
+## 📋 Descripción del Cambio
 
-Bienvenido al ecosistema de este proyecto. Valoramos las contribuciones que priorizan la calidad técnica, la escalabilidad y el rigor arquitectónico. Para asegurar un flujo de trabajo eficiente y mantener la integridad del código base, hemos establecido protocolos detallados que todos los colaboradores deben seguir.
+<!-- Explica de forma concisa qué problema resuelve este Pull Request o qué funcionalidad agrega a Nemesis. -->
 
-## 🛠️ Protocolo de Colaboración
+## 🎯 Tipo de Cambio
 
-Antes de iniciar cualquier desarrollo, es imperativo consultar nuestra documentación técnica para alinearse con los estándares del proyecto:
+- [ ] 🐛 Bug fix (corrección de error sin breaking changes)
+- [ ] ✨ Nueva característica / Scanner / Regla (nueva funcionalidad compatible hacia atrás)
+- [ ] 💥 Breaking change (cambio que altera interfaces o compatibilidad previa)
+- [ ] ⚡ Optimización de rendimiento (mejoras de velocidad o memoria)
+- [ ] 📝 Documentación (actualización de guías, README o especificaciones)
+- [ ] 🔧 Mantenimiento / CI / Tooling (refactorización, dependencias, GitHub Actions)
 
-- **Directrices de Contribución:** [Consultar CONTRIBUTING.md](./CONTRIBUTING.md)
+## 🔗 Issues Relacionados
 
-## ⚖️ Marcos Operativos y Seguridad
+<!-- Vincula los issues afectados, por ejemplo: Fixes #123, Closes #456 -->
+- Fixes #
 
-La excelencia de este software se fundamenta en un entorno de respeto mutuo y seguridad proactiva. Le solicitamos revisar exhaustivamente los siguientes marcos operativos antes de su participación:
+## 🧪 Pruebas Realizadas
 
-- **Código de Conducta:** [CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md) — Establece los estándares de profesionalismo y ética esperados en nuestra comunidad.
-- **Política de Seguridad:** [SECURITY.md](./SECURITY.md) — Procedimientos oficiales para el reporte y la gestión responsable de vulnerabilidades.
+<!-- Describe los pasos seguidos para verificar los cambios. -->
+- [ ] Verificación de tipos: `deno task check`
+- [ ] Formateo y linter: `deno task fmt` & `deno task lint`
+- [ ] Auto-auditoría local: `deno task start --path .`
+- [ ] Pruebas manuales o con repositorios de prueba
 
-© 2026 Andrés Antonio Cardoso | Profesionalismo en Software Libre
+## ✅ Checklist de Calidad
+
+- [ ] Mi código sigue las pautas de estilo y arquitectura de [CONTRIBUTING.md](./CONTRIBUTING.md).
+- [ ] Los mensajes de commit cumplen con [COMMIT_CONVENTION.md](./COMMIT_CONVENTION.md).
+- [ ] He actualizado la documentación técnica o el archivo `CHANGELOG.md` si corresponde.
+- [ ] No se introducen dependencias innecesarias ni credenciales/secretos en el código.
+
+---
+
+© 2010-2026 Andrés Antonio Cardoso — GLASTOR-DEV

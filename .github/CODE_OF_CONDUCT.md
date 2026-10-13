@@ -22,7 +22,7 @@ Para mantener la integridad de nuestra arquitectura y comunidad, exigimos adhere
 
 ## 3. Gobernanza y Compliance
 
-Los maintainers de GLASTOR-DENO actúan como el consejo de arquitectura y moderación. Es nuestra responsabilidad estratégica:
+Los maintainers de Nemesis (GLASTOR-DEV) actúan como el consejo de arquitectura y moderación. Es nuestra responsabilidad estratégica:
 
 - Garantizar una mediación imparcial en conflictos técnicos.
 - Moderar contribuciones que no cumplan con el estándar de calidad o conducta.
@@ -30,7 +30,7 @@ Los maintainers de GLASTOR-DENO actúan como el consejo de arquitectura y modera
 
 ## 4. Alcance Operativo
 
-Este framework es vinculante en todos los espacios oficiales de GLASTOR-DENO en GitHub y en cualquier entorno donde se represente formalmente al proyecto (Conferencias, Meetups, StackOverflow).
+Este framework es vinculante en todos los espacios oficiales de Nemesis (GLASTOR-DEV) en GitHub y en cualquier entorno donde se represente formalmente al proyecto (Conferencias, Meetups, StackOverflow).
 
 ## 5. Protocolo de Respuesta a Incidentes (IRP)
 
@@ -52,7 +52,7 @@ La gobernanza aplicará un sistema de escalado proporcional a la gravedad de la 
 
 1. **Corrección Técnica:** Notificación privada para rectificar el comportamiento.
 2. **Advertencia Formal:** Registro documentado de la falta con restricciones temporales de escritura.
-3. **Suspensión de Privilegios:** Bloqueo temporal de la capacidad de interactuar con el ecosistema GLASTOR-DENO.
+3. **Suspensión de Privilegios:** Bloqueo temporal de la capacidad de interactuar con el ecosistema Nemesis (GLASTOR-DEV).
 4. **Revocación Permanente:** Expulsión definitiva por infracciones críticas o degradación recurrente del entorno.
 
 ## 7. Directrices sobre IA y Code Integrity

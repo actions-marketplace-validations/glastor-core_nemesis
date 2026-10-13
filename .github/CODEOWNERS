@@ -1,37 +1,40 @@
 # ═══════════════════════════════════════════════════════════════════════════
-# PROJECT SUPERNOVA - CODEOWNERS CONFIGURATION
+# NEMESIS AUDITOR & AUTO-REMEDIATION - CODEOWNERS CONFIGURATION
 # ═══════════════════════════════════════════════════════════════════════════
-# Purpose: Define ownership, accountability, and review protocols.
-# Reference: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+# Propósito: Definir la propiedad del código y protocolos de revisión.
+# Referencia: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
 # ═══════════════════════════════════════════════════════════════════════════
 
 # [ GLOBAL MAINTAINER ]
-# Acts as the default reviewer for all repository assets to ensure architectural integrity.
+# Revisor por defecto de todos los activos del repositorio.
 * @glastor-dev
 
-# [ CORE ARCHITECTURE & INFRASTRUCTURE ]
-# Critical configuration files that define the build pipeline and environment settings.
+# [ INFRAESTRUCTURA DE GITHUB ACTIONS & CONFIGURACIÓN ]
+# Workflows de CI/CD y metadatos de la GitHub Action.
 .github/ @glastor-dev
-package.json @glastor-dev
-package-lock.json @glastor-dev
-tsconfig.json @glastor-dev
-vite.config.ts @glastor-dev
+action.yml @glastor-dev
+deno.json @glastor-dev
+deno.lock @glastor-dev
+.nemesis.yml @glastor-dev
 
-# [ SOURCE CODE & DOMAIN LOGIC ]
-# Core application modules, including API endpoints, UI components, and business services.
-/api/ @glastor-dev
-/components/ @glastor-dev
-/services/ @glastor-dev
+# [ CÓDIGO FUENTE & MÓDULOS DEL MOTOR ]
+# Módulos centrales de escaneo, remediación, reportes y utilidades.
+/src/ @glastor-dev
+/src/scanners/ @glastor-dev
+/src/reporters/ @glastor-dev
+/src/remediation/ @glastor-dev
+/src/github/ @glastor-dev
+/src/utils/ @glastor-dev
 *.ts @glastor-dev
-*.tsx @glastor-dev
 
-# [ COMPLIANCE, GOVERNANCE & DOCS ]
-# Public-facing documentation and legal compliance files.
+# [ GOBERNANZA, COMPLIANCE & DOCUMENTACIÓN ]
+# Documentación pública y archivos de licencia/contribución.
 README.md @glastor-dev
 CHANGELOG.md @glastor-dev
 CONTRIBUTING.md @glastor-dev
+CONTRIBUTORS.md @glastor-dev
+CITATION.cff @glastor-dev
+SECURITY.md @glastor-dev
 LICENSE @glastor-dev
 
-# ═══════════════════════════════════════════════════════════════════════════
-# END OF CONFIGURATION
 # ═══════════════════════════════════════════════════════════════════════════

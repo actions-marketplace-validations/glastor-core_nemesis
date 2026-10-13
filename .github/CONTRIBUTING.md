@@ -1,99 +1,133 @@
 # 🌌 Ingeniería y Estándares de Contribución
 
-Gracias por sumarte a la misión de escalar el ecosistema de `**GLASTOR-DEV** la division de desarrollo de GLASTOR®`. Valoramos la excelencia técnica, el rigor arquitectónico y el compromiso con la calidad del software. Esta guía no es solo un conjunto de reglas, sino un marco de trabajo diseñado para optimizar la **Developer Experience (DX)** y garantizar la integridad del core.
+Gracias por sumarte a la misión de construir y evolucionar **Nemesis** dentro del ecosistema de `**GLASTOR-DEV** (división de desarrollo de GLASTOR®)`. Nemesis es un motor universal de DevSecOps, auditoría de higiene de repositorios y auto-remediación para GitHub Actions y CLI.
+
+Valoramos la excelencia técnica, el rigor en seguridad y el compromiso con la calidad del software. Esta guía establece las directrices operativas y de ingeniería para colaborar con máxima eficiencia (DX).
+
+---
 
 ## 🛠 Gestión Estratégica de Incidencias
 
-### Reportes de Errores (Fidelidad Técnica)
+### 🐛 Reportes de Errores (Fidelidad Técnica)
 
-Para optimizar los tiempos de resolución, exigimos reportes que eliminen la ambigüedad. Cada _issue_ debe actuar como un documento técnico:
+Cada *issue* debe actuar como un documento técnico verificable:
 
-- **Executive Summary:** Breve descripción del impacto y alcance.
-- **Protocolo de Reproducción:** Secuencia determinística de pasos.
-- **Análisis de Desviación:** Contraste detallado entre el comportamiento observado vs. el esperado.
-- **Stack Tecnológico:** Especificaciones del entorno (Runtime, Navegador, OS).
-- **Evidencia Técnica:** Logs de consola, trazas de error o capturas visuales.
+- **Executive Summary:** Resumen conciso del impacto y el alcance.
+- **Protocolo de Reproducción:** Pasos exactos y deterministas para replicar el problema.
+- **Análisis de Desviación:** Contraste claro entre el resultado observado y el esperado.
+- **Entorno de Ejecución:**
+  - Versión de Deno (`deno --version`)
+  - Sistema Operativo (Linux, macOS, Windows)
+  - Modo de ejecución: CLI local o GitHub Action (`action.yml`)
+- **Evidencia Técnica:** Logs de consola, trazas de error (`stack traces`) o reportes JSON/SARIF.
 
-### Arquitectura de Nuevas Funcionalidades
+### 💡 Propuesta de Nuevas Reglas o Scanners
 
-Las propuestas deben alinearse con nuestra hoja de ruta técnica. Si planeas una mejora, presenta un _Design Doc_ preliminar que cubra:
+Para proponer nuevos módulos de detección, reglas de higiene o estrategias de auto-remediación:
 
-- **Business Value:** Justificación del ROI técnico.
-- **User Stories:** Casos de uso específicos.
-- **Esquema Arquitectónico:** Diagramas o lógica de implementación sugerida.
-- **Viabilidad:** Consideraciones sobre retrocompatibilidad y performance.
+1. **Definición de Amenaza / Regla:** Qué vector de seguridad, patrón inseguro o desorden de repositorio se detecta.
+2. **Estrategia de Detección:** Expresiones regulares seguras (sin riesgo de ReDoS), análisis AST o inspección de manifiestos.
+3. **Propuesta de Remediación:** Si admite auto-fix automático (`--fix`) o sugerencias en PRs (`--pr-suggestions`).
+4. **Falsos Positivos:** Identificar posibles excepciones o directivas de supresión (`@nemesis-ignore`).
 
-## 🚀 Pipeline de Integración (Pull Requests)
+---
 
-Implementamos un flujo de CI/CD riguroso para proteger la estabilidad de `main`:
+## 💻 Setup del Entorno de Desarrollo
 
-1. **Fork & Branching**
-   Utiliza una nomenclatura semántica para tus ramas:
-   ```bash
-   git checkout -b feature/amazing-feature
-   ```
-2. **Integridad del Código**
-   Implementamos un flujo de CI/CD riguroso para proteger la estabilidad de `main`:
-   - Cumplimiento estricto del _Clean Code_.
-   - Cobertura de tests unitarios: `deno task test`.
-   - Formateo y Linting: `deno task fmt` y `deno task lint`.
-   - **IMPORTANTE:** No edites `README.md` directamente. Edita `README.profile.md` y ejecuta el generador.
-   - Actualización sincrónica de la documentación: `deno task readme`.
-3. **Protocolo de Commits (SemVer)**
-   Adoptamos _Conventional Commits_ para una trazabilidad automatizada:
+### Requisitos Previos
 
-   ```bash
-   git commit -m "feat: implement robust state management for glastor-deno"
-   ```
+- **Deno:** 2.0+ instalado ([instrucciones de instalación](https://deno.land/)).
+- **Git:** 2.30+.
+- **GitHub Token (Opcional para pruebas de API):** Copia `.env.example` a `.env` y asigna `GITHUB_TOKEN`.
 
-   _Estándares: `feat:`, `fix:`, `docs:`, `style:`, `refactor:`, `perf:`, `test:`, `chore:`._
+### 1. Clonación del Repositorio
 
-4. **Sincronización y Push**
-   ```bash
-   git push origin feature/amazing-feature
-   ```
+```bash
+git clone https://github.com/glastor-dev/nemesis.git
+cd nemesis
+```
 
-**Directrices de Calidad para PRs:**
+### 2. Comandos y Tareas Disponibles
 
-- **Atomicidad:** Un cambio, una responsabilidad por PR.
-- **Referenciación:** Vincula automáticamente mediante `#issue-number`.
-- **Changelog:** Es mandatorio registrar los cambios en `CHANGELOG.md`.
+Nemesis gestiona sus scripts de desarrollo directamente a través de `deno.json`:
 
-## 💻 Setup del Entorno de Ingeniería
+```bash
+# Verificación de tipos TypeScript estricta
+deno task check
 
-1. **Clonación**
-   ```bash
-   git clone https://github.com/glastor-dev/glastor-deno.git
-   cd glastor-deno
-   ```
-2. **Ejecución y Desarrollo**
-   ```bash
-   deno task readme
-   ```
-3. **Tests**
-   ```bash
-   deno task test
-   ```
+# Formateo de código según los estándares del proyecto
+deno task fmt
 
-## 📐 Principios de Ingeniería y DX
+# Análisis estático y linter
+deno task lint
 
-- **Integridad Sintáctica:** Adhesión total a las reglas de ESLint y Prettier.
-- **Semántica Orientada a Dominio:** Nombramiento descriptivo basado en el contexto de negocio.
-- **Modularidad Atómica:** Seguimiento estricto de los principios SOLID y patrones de diseño reactivos.
-- **Performance First:** Uso optimizado de React Hooks y memoización estratégica.
+# Ejecutar auditoría sobre el propio repositorio (dogfooding)
+deno task start --path .
 
-## 🧪 Garantía de Calidad y Observabilidad
+# Ejecutar escaneo completo activando todos los scanners
+deno task scan
 
-- **QA Manual & Automatizado:** Validación cruzada de funcionalidades.
-- **Matriz de Compatibilidad:** Verificación en motores Blink, WebKit y Gecko.
-- **Responsive Design:** Adaptabilidad garantizada en todos los breakpoints.
-- **A11y:** Auditoría de accesibilidad conforme a estándares WCAG.
+# Compilar binario nativo standalone
+deno task compile
+```
 
-## 📧 Canales de Alta Prioridad y Soporte
+---
 
-Para discusiones arquitectónicas o consultas de infraestructura:
+## 🚀 Flujo de Integración y Pull Requests
 
-- **GitHub Discussions:** Canal preferente para debate técnico.
+Para preservar la estabilidad de la rama principal (`master`), seguimos un flujo riguroso:
+
+### 1. Rama de Trabajo
+
+Crea una rama descriptiva partiendo de `master`:
+
+```bash
+git checkout -b feat/license-spdx-check
+# o: git checkout -b fix/auto-fix-trailing-spaces
+```
+
+### 2. Estándares de Código
+
+- **TypeScript Estricto:** Tipado exhaustivo; evitar el uso de `any` a menos que sea estrictamente necesario.
+- **Arquitectura Modular:**
+  - `/src/scanners/`: Motores de análisis (`secrets`, `hygiene`, `dependencies`, `sbom`, `permissions`, `license`).
+  - `/src/remediation/`: Lógica de auto-remediación y generación de sugerencias.
+  - `/src/reporters/`: Formateadores de salida (Consola, Markdown Summary, SARIF).
+  - `/src/github/`: Integración con la API de GitHub y cliente Octokit.
+  - `/src/utils/`: Funciones auxiliares independientes de plataforma.
+- **Verificación Local Obligatoria:**
+  Asegúrate de que pasen sin errores:
+  ```bash
+  deno task check && deno task lint && deno task fmt --check
+  ```
+
+### 3. Protocolo de Commits (Conventional Commits)
+
+Implementamos la especificación de [Conventional Commits](./COMMIT_CONVENTION.md):
+
+```bash
+git commit -m "feat(scanners): add strict spdx identifier validation"
+git commit -m "fix(remediation): preserve crlf line endings on windows hosts"
+```
+
+Prefijos permitidos: `feat:`, `fix:`, `docs:`, `style:`, `refactor:`, `perf:`, `test:`, `ci:`, `chore:`.
+
+### 4. Publicación y PR
+
+Envía tu rama al repositorio remoto y abre un Pull Request hacia la rama `master`:
+
+```bash
+git push origin feat/license-spdx-check
+```
+
+Completa el formulario generado por el [PULL_REQUEST_TEMPLATE.md](./PULL_REQUEST_TEMPLATE.md) asegurando que todos los puntos del checklist estén marcados.
+
+---
+
+## 📧 Canales de Comunicación y Soporte
+
+- **GitHub Discussions:** [glastor-dev/nemesis/discussions](https://github.com/glastor-dev/nemesis/discussions) (consultas de arquitectura y propuestas).
+- **GitHub Issues:** [glastor-dev/nemesis/issues](https://github.com/glastor-dev/nemesis/issues) (bugs y tareas).
 - **Soporte Corporativo:** [glastor.info@gmail.com](mailto:glastor.info@gmail.com)
 - **Comunicación Directa (Telegram):** [@zerhocool](https://t.me/zerhocool)
 
@@ -101,8 +135,6 @@ Para discusiones arquitectónicas o consultas de infraestructura:
 
 ## Código de Conducta
 
-Este ecosistema opera bajo nuestro [Código de Conducta](./CODE_OF_CONDUCT.md). Fomentamos un entorno de colaboración profesional, meritocrático y respetuoso.
-
-Agradecemos tu contribución a la excelencia tecnológica de GLASTOR-DENO.
+Este proyecto se rige bajo nuestro [Código de Conducta](./CODE_OF_CONDUCT.md). Fomentamos un entorno de respeto mutuo, inclusión y rigor profesional.
 
 © 2010-2026 Andrés Antonio Cardoso — Todos los derechos reservados
