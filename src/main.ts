@@ -6,6 +6,7 @@ import { AuditFinding, AuditReport, ScannerSummary, Severity } from "./types.ts"
 import { GitleaksScanner } from "./scanners/gitleaks.ts";
 import { SemgrepScanner } from "./scanners/semgrep.ts";
 import { TrivyScanner } from "./scanners/trivy.ts";
+import { HygieneScanner } from "./scanners/hygiene.ts";
 import { Scanner } from "./scanners/base.ts";
 import { printConsoleReport } from "./reporters/console.ts";
 import { generateMarkdownReport } from "./reporters/markdown.ts";
@@ -33,9 +34,12 @@ async function main() {
   if (config.scanSca) {
     scanners.push(new TrivyScanner());
   }
+  if (config.scanHygiene) {
+    scanners.push(new HygieneScanner());
+  }
 
   if (scanners.length === 0) {
-    console.error("No scanners enabled. Use --secrets, --sast, --sca or --all.");
+    console.error("No scanners enabled. Use --secrets, --sast, --sca, --hygiene or --all.");
     Deno.exit(1);
   }
 

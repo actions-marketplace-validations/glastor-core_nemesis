@@ -1,10 +1,10 @@
 export type Severity = "CRITICAL" | "HIGH" | "MEDIUM" | "LOW" | "INFO";
 
-export type FindingCategory = "SECRET" | "SAST" | "SCA" | "MISCONFIG";
+export type FindingCategory = "SECRET" | "SAST" | "SCA" | "MISCONFIG" | "HYGIENE";
 
 export interface AuditFinding {
   id: string;
-  tool: "gitleaks" | "semgrep" | "trivy" | string;
+  tool: "gitleaks" | "semgrep" | "trivy" | "hygiene" | string;
   category: FindingCategory;
   severity: Severity;
   title: string;
@@ -18,6 +18,7 @@ export interface AuditFinding {
   package?: string;
   installedVersion?: string;
   fixedVersion?: string;
+  fileSizeBytes?: number;
   raw?: unknown;
 }
 
@@ -49,6 +50,9 @@ export interface NemesisConfig {
   scanSecrets: boolean;
   scanSast: boolean;
   scanSca: boolean;
+  scanHygiene: boolean;
+  maxFileSizeMb: number;
+  requireLicense: boolean;
   failOnCritical: boolean;
   failOnHigh: boolean;
   failOnMedium: boolean;

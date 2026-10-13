@@ -27,11 +27,20 @@ function getActionBooleanInput(name: string, defaultValue: boolean): boolean {
 
 export function loadConfig(cliArgs: string[]): NemesisConfig {
   const parsed = parseArgs(cliArgs, {
-    string: ["path", "output-dir", "semgrep-rules", "trivy-severity", "github-token"],
+    string: [
+      "path",
+      "output-dir",
+      "semgrep-rules",
+      "trivy-severity",
+      "github-token",
+      "max-file-size",
+    ],
     boolean: [
       "secrets",
       "sast",
       "sca",
+      "hygiene",
+      "require-license",
       "all",
       "fail-on-critical",
       "fail-on-high",
@@ -52,6 +61,7 @@ export function loadConfig(cliArgs: string[]): NemesisConfig {
       "output-dir": ".nemesis-reports",
       "semgrep-rules": "p/security-audit",
       "trivy-severity": "UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL",
+      "max-file-size": "10",
       verbose: false,
     },
   });
@@ -62,7 +72,8 @@ export function loadConfig(cliArgs: string[]): NemesisConfig {
   const hasSecretsFlag = cliArgs.includes("--secrets") || cliArgs.includes("--no-secrets");
   const hasSastFlag = cliArgs.includes("--sast") || cliArgs.includes("--no-sast");
   const hasScaFlag = cliArgs.includes("--sca") || cliArgs.includes("--no-sca");
-  const anyExplicitModule = hasSecretsFlag || hasSastFlag || hasScaFlag;
+  const hasHygieneFlag = cliArgs.includes("--hygiene") || cliArgs.includes("--no-hygiene");
+  const anyExplicitModule = hasSecretsFlag || hasSastFlag || hasScaFlag || hasHygieneFlag;
   const defaultScan = scanAll || !anyExplicitModule;
 
   const targetPath = isGitHubActions
@@ -80,6 +91,19 @@ export function loadConfig(cliArgs: string[]): NemesisConfig {
   const scanSca = isGitHubActions
     ? getActionBooleanInput("scan-sca", true)
     : (hasScaFlag ? parsed.sca : defaultScan);
+
+  const scanHygiene = isGitHubActions
+    ? getActionBooleanInput("scan-hygiene", true)
+    : (hasHygieneFlag ? parsed.hygiene : defaultScan);
+
+  const maxFileSizeMbStr = isGitHubActions
+    ? getActionInput("max-file-size-mb", parsed["max-file-size"])
+    : parsed["max-file-size"];
+  const maxFileSizeMb = Math.max(1, parseFloat(maxFileSizeMbStr) || 10);
+
+  const requireLicense = isGitHubActions
+    ? getActionBooleanInput("require-license", false)
+    : (parsed["require-license"] ?? false);
 
   const failOnCritical = isGitHubActions
     ? getActionBooleanInput("fail-on-critical", false)
@@ -122,6 +146,9 @@ export function loadConfig(cliArgs: string[]): NemesisConfig {
     scanSecrets,
     scanSast,
     scanSca,
+    scanHygiene,
+    maxFileSizeMb,
+    requireLicense,
     failOnCritical,
     failOnHigh,
     failOnMedium,
@@ -137,7 +164,7 @@ export function loadConfig(cliArgs: string[]): NemesisConfig {
 
 export function showHelp(): void {
   console.log(`
-Nemesis - Universal Repository Security Auditor (Deno + TypeScript)
+Nemesis - Universal Repository Security & Hygiene Auditor (Deno + TypeScript)
 
 USAGE:
   deno run --allow-all src/main.ts [OPTIONS]
@@ -145,10 +172,13 @@ USAGE:
 
 OPTIONS:
   -p, --path <DIR>          Target directory to audit (default: ".")
-      --all                 Enable all scan modules (secrets, sast, sca)
+      --all                 Enable all scan modules (secrets, sast, sca, hygiene)
       --secrets             Run secret scanning (Gitleaks)
       --sast                Run static application security testing (Semgrep)
       --sca                 Run software composition analysis (Trivy)
+      --hygiene             Run repository hygiene & junk cleanup checks
+      --max-file-size <MB>  Max file size before warning in MB (default: 10)
+      --require-license     Require a LICENSE file in repository root
       --fail-on-critical    Exit with code 1 if CRITICAL vulnerabilities exist
       --fail-on-high        Exit with code 1 if HIGH or CRITICAL exist
       --fail-on-medium      Exit with code 1 if MEDIUM or higher exist

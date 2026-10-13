@@ -1,5 +1,5 @@
-name: 'Nemesis Universal Security Auditor'
-description: 'Automated DevSecOps security audit action (Secrets, SAST, SCA) powered by Deno & TypeScript'
+name: 'Nemesis Universal Security & Hygiene Auditor'
+description: 'Automated DevSecOps security & repo cleanliness audit action (Secrets, SAST, SCA, Hygiene) powered by Deno & TypeScript'
 author: 'Nemesis Team'
 branding:
   icon: 'shield'
@@ -22,6 +22,18 @@ inputs:
     description: 'Enable Trivy SCA/dependency scanning'
     required: false
     default: 'true'
+  scan-hygiene:
+    description: 'Enable repository hygiene and junk file detection'
+    required: false
+    default: 'true'
+  max-file-size-mb:
+    description: 'Max allowed file size before warning in MB'
+    required: false
+    default: '10'
+  require-license:
+    description: 'Require a LICENSE file in repository root'
+    required: false
+    default: 'false'
   fail-on-critical:
     description: 'Fail the step if CRITICAL vulnerabilities are found'
     required: false
@@ -128,6 +140,9 @@ runs:
         INPUT_SCAN_SECRETS: ${{ inputs.scan-secrets }}
         INPUT_SCAN_SAST: ${{ inputs.scan-sast }}
         INPUT_SCAN_SCA: ${{ inputs.scan-sca }}
+        INPUT_SCAN_HYGIENE: ${{ inputs.scan-hygiene }}
+        INPUT_MAX_FILE_SIZE_MB: ${{ inputs.max-file-size-mb }}
+        INPUT_REQUIRE_LICENSE: ${{ inputs.require-license }}
         INPUT_FAIL_ON_CRITICAL: ${{ inputs.fail-on-critical }}
         INPUT_FAIL_ON_HIGH: ${{ inputs.fail-on-high }}
         INPUT_FAIL_ON_MEDIUM: ${{ inputs.fail-on-medium }}

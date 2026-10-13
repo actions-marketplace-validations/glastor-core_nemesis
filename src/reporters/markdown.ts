@@ -42,6 +42,7 @@ export function generateMarkdownReport(report: AuditReport): string {
   const sca = report.findings.filter((f) => f.category === "SCA");
   const sast = report.findings.filter((f) => f.category === "SAST");
   const misconfig = report.findings.filter((f) => f.category === "MISCONFIG");
+  const hygiene = report.findings.filter((f) => f.category === "HYGIENE");
 
   if (secrets.length > 0) {
     sections.push(`### 🚨 Secretos Expuestos (${secrets.length})`);
@@ -87,6 +88,18 @@ export function generateMarkdownReport(report: AuditReport): string {
       sections.push(`| \`${item.file ?? "N/A"}\` | \`${item.ruleId ?? item.title}\` | **${item.severity}** | ${item.description.replace(/\|/g, "\\|").substring(0, 100)}... |`);
     }
     sections.push("\n</details>\n");
+  }
+
+  if (hygiene.length > 0) {
+    sections.push(`### 🧹 Higiene y Limpieza del Repositorio (${hygiene.length})`);
+    sections.push(`> ⚠️ **Limpieza:** Se encontraron problemas de higiene, archivos temporales/prohibidos o de gobernanza.`);
+    sections.push("");
+    sections.push(`| Regla / Alerta | Archivo Afectado | Severidad | Descripción |`);
+    sections.push(`| :--- | :--- | :---: | :--- |`);
+    for (const item of hygiene) {
+      sections.push(`| \`${item.ruleId ?? item.title}\` | \`${item.file ?? "N/A"}\` | **${item.severity}** | ${item.description.replace(/\|/g, "\\|")} |`);
+    }
+    sections.push("");
   }
 
   if (report.findings.length === 0) {

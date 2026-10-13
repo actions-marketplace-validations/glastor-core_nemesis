@@ -1,4 +1,4 @@
-name: Nemesis Universal Security Audit
+name: Nemesis Universal Security & Hygiene Audit
 
 on:
   workflow_call:
@@ -33,6 +33,16 @@ on:
         required: false
         default: true
         type: boolean
+      scan-hygiene:
+        description: 'Run repository hygiene and junk cleanup checks'
+        required: false
+        default: true
+        type: boolean
+      max-file-size-mb:
+        description: 'Max allowed file size in MB'
+        required: false
+        default: '10'
+        type: string
       post-pr-comment:
         description: 'Post PR comment with summary'
         required: false
@@ -51,7 +61,7 @@ permissions:
 
 jobs:
   security-audit:
-    name: Security & Quality Audit
+    name: Security & Hygiene Audit
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
@@ -68,6 +78,8 @@ jobs:
           scan-secrets: ${{ inputs.scan-secrets }}
           scan-sast: ${{ inputs.scan-sast }}
           scan-sca: ${{ inputs.scan-sca }}
+          scan-hygiene: ${{ inputs.scan-hygiene }}
+          max-file-size-mb: ${{ inputs.max-file-size-mb }}
           post-pr-comment: ${{ inputs.post-pr-comment }}
           github-token: ${{ secrets.token || secrets.GITHUB_TOKEN }}
           upload-sarif: 'true'
