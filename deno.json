@@ -1,6 +1,7 @@
 {
   "name": "nemesis",
   "version": "1.1.0",
+  "license": "MIT",
   "exports": "./src/main.ts",
   "tasks": {
     "start": "deno run --allow-all src/main.ts",
