@@ -219,7 +219,7 @@ runs:
 
     - name: Upload SARIF to GitHub Security Tab
       if: ${{ inputs.upload-sarif == 'true' && hashFiles(format('{0}/nemesis-report.sarif', inputs.output-dir)) != '' }}
-      uses: github/codeql-action/upload-sarif@v3
+      uses: github/codeql-action/upload-sarif@v4
       with:
         sarif_file: ${{ inputs.output-dir }}/nemesis-report.sarif
         category: "nemesis-security-audit"
