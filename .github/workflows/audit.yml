@@ -1,4 +1,4 @@
-name: Nemesis Universal Security & Hygiene Audit
+name: Nemesis Universal Security, Hygiene & Compliance Audit
 
 on:
   workflow_call:
@@ -38,6 +38,21 @@ on:
         required: false
         default: true
         type: boolean
+      scan-licenses:
+        description: 'Run license compliance scanning'
+        required: false
+        default: true
+        type: boolean
+      generate-sbom:
+        description: 'Generate CycloneDX SBOM report'
+        required: false
+        default: true
+        type: boolean
+      diff-mode:
+        description: 'Only scan files modified in current PR'
+        required: false
+        default: false
+        type: boolean
       max-file-size-mb:
         description: 'Max allowed file size in MB'
         required: false
@@ -48,6 +63,16 @@ on:
         required: false
         default: true
         type: boolean
+      slack-webhook-url:
+        description: 'Slack Webhook URL for notifications'
+        required: false
+        default: ''
+        type: string
+      discord-webhook-url:
+        description: 'Discord Webhook URL for notifications'
+        required: false
+        default: ''
+        type: string
     secrets:
       token:
         description: 'GitHub token for PR commenting and SARIF upload'
@@ -61,7 +86,7 @@ permissions:
 
 jobs:
   security-audit:
-    name: Security & Hygiene Audit
+    name: Security, Hygiene & Compliance Audit
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
@@ -79,7 +104,12 @@ jobs:
           scan-sast: ${{ inputs.scan-sast }}
           scan-sca: ${{ inputs.scan-sca }}
           scan-hygiene: ${{ inputs.scan-hygiene }}
+          scan-licenses: ${{ inputs.scan-licenses }}
+          generate-sbom: ${{ inputs.generate-sbom }}
+          diff-mode: ${{ inputs.diff-mode }}
           max-file-size-mb: ${{ inputs.max-file-size-mb }}
           post-pr-comment: ${{ inputs.post-pr-comment }}
+          slack-webhook-url: ${{ inputs.slack-webhook-url }}
+          discord-webhook-url: ${{ inputs.discord-webhook-url }}
           github-token: ${{ secrets.token || secrets.GITHUB_TOKEN }}
           upload-sarif: 'true'

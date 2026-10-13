@@ -1,5 +1,5 @@
-name: 'Nemesis Universal Security & Hygiene Auditor'
-description: 'Automated DevSecOps security & repo cleanliness audit action (Secrets, SAST, SCA, Hygiene) powered by Deno & TypeScript'
+name: 'Nemesis Universal Security, Hygiene & Compliance Auditor'
+description: 'Automated DevSecOps security, hygiene, license compliance & SBOM auditor powered by Deno & TypeScript'
 author: 'Nemesis Team'
 branding:
   icon: 'shield'
@@ -26,6 +26,22 @@ inputs:
     description: 'Enable repository hygiene and junk file detection'
     required: false
     default: 'true'
+  scan-licenses:
+    description: 'Enable open source license compliance checks'
+    required: false
+    default: 'true'
+  generate-sbom:
+    description: 'Generate CycloneDX SBOM report'
+    required: false
+    default: 'true'
+  diff-mode:
+    description: 'Only scan files modified in current Pull Request/commit'
+    required: false
+    default: 'false'
+  diff-base-ref:
+    description: 'Base Git ref for differential scan'
+    required: false
+    default: 'origin/main'
   max-file-size-mb:
     description: 'Max allowed file size before warning in MB'
     required: false
@@ -62,6 +78,18 @@ inputs:
     description: 'Directory where audit reports are saved'
     required: false
     default: '.nemesis-reports'
+  config-file:
+    description: 'Path to .nemesis.yml configuration / suppression file'
+    required: false
+    default: ''
+  slack-webhook-url:
+    description: 'Slack Webhook URL for audit notifications'
+    required: false
+    default: ''
+  discord-webhook-url:
+    description: 'Discord Webhook URL for audit notifications'
+    required: false
+    default: ''
   github-token:
     description: 'GitHub token for PR commenting and API access'
     required: false
@@ -88,6 +116,9 @@ outputs:
   high-count:
     description: 'Number of high findings'
     value: ${{ steps.run-nemesis.outputs.high-count }}
+  ignored-count:
+    description: 'Number of findings suppressed via .nemesis.yml'
+    value: ${{ steps.run-nemesis.outputs.ignored-count }}
   report-json:
     description: 'Path to generated JSON report'
     value: ${{ steps.run-nemesis.outputs.report-json }}
@@ -97,6 +128,9 @@ outputs:
   report-sarif:
     description: 'Path to generated SARIF report'
     value: ${{ steps.run-nemesis.outputs.report-sarif }}
+  sbom-file:
+    description: 'Path to generated CycloneDX SBOM'
+    value: ${{ steps.run-nemesis.outputs.sbom-file }}
 
 runs:
   using: 'composite'
@@ -105,6 +139,14 @@ runs:
       uses: denoland/setup-deno@v2
       with:
         deno-version: v2.x
+
+    - name: Cache Trivy Vulnerability Database
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/trivy
+        key: trivy-db-${{ runner.os }}-${{ github.run_id }}
+        restore-keys: |
+          trivy-db-${{ runner.os }}-
 
     - name: Ensure Audit Tools on Linux Runner
       if: runner.os == 'Linux'
@@ -126,7 +168,7 @@ runs:
         fi
 
         # Install Trivy if missing
-        if ! command -v trivy &> /dev/null && [ "${{ inputs.scan-sca }}" = "true" ]; then
+        if ! command -v trivy &> /dev/null && ([ "${{ inputs.scan-sca }}" = "true" ] || [ "${{ inputs.scan-licenses }}" = "true" ]); then
           echo "[Nemesis] Installing Trivy..."
           curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sudo sh -s -- -b /usr/local/bin v0.58.2
         fi
@@ -141,6 +183,10 @@ runs:
         INPUT_SCAN_SAST: ${{ inputs.scan-sast }}
         INPUT_SCAN_SCA: ${{ inputs.scan-sca }}
         INPUT_SCAN_HYGIENE: ${{ inputs.scan-hygiene }}
+        INPUT_SCAN_LICENSES: ${{ inputs.scan-licenses }}
+        INPUT_GENERATE_SBOM: ${{ inputs.generate-sbom }}
+        INPUT_DIFF_MODE: ${{ inputs.diff-mode }}
+        INPUT_DIFF_BASE_REF: ${{ inputs.diff-base-ref }}
         INPUT_MAX_FILE_SIZE_MB: ${{ inputs.max-file-size-mb }}
         INPUT_REQUIRE_LICENSE: ${{ inputs.require-license }}
         INPUT_FAIL_ON_CRITICAL: ${{ inputs.fail-on-critical }}
@@ -149,6 +195,9 @@ runs:
         INPUT_POST_PR_COMMENT: ${{ inputs.post-pr-comment }}
         INPUT_CREATE_ANNOTATIONS: ${{ inputs.create-annotations }}
         INPUT_OUTPUT_DIR: ${{ inputs.output-dir }}
+        INPUT_CONFIG_FILE: ${{ inputs.config-file }}
+        INPUT_SLACK_WEBHOOK_URL: ${{ inputs.slack-webhook-url }}
+        INPUT_DISCORD_WEBHOOK_URL: ${{ inputs.discord-webhook-url }}
         INPUT_GITHUB_TOKEN: ${{ inputs.github-token }}
         INPUT_SEMGREP_RULES: ${{ inputs.semgrep-rules }}
         INPUT_TRIVY_SEVERITY: ${{ inputs.trivy-severity }}

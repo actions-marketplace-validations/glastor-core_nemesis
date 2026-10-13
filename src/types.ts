@@ -1,10 +1,10 @@
 export type Severity = "CRITICAL" | "HIGH" | "MEDIUM" | "LOW" | "INFO";
 
-export type FindingCategory = "SECRET" | "SAST" | "SCA" | "MISCONFIG" | "HYGIENE";
+export type FindingCategory = "SECRET" | "SAST" | "SCA" | "MISCONFIG" | "HYGIENE" | "LICENSE";
 
 export interface AuditFinding {
   id: string;
-  tool: "gitleaks" | "semgrep" | "trivy" | "hygiene" | string;
+  tool: "gitleaks" | "semgrep" | "trivy" | "hygiene" | "license" | string;
   category: FindingCategory;
   severity: Severity;
   title: string;
@@ -18,7 +18,10 @@ export interface AuditFinding {
   package?: string;
   installedVersion?: string;
   fixedVersion?: string;
+  license?: string;
   fileSizeBytes?: number;
+  ignored?: boolean;
+  ignoreReason?: string;
   raw?: unknown;
 }
 
@@ -37,12 +40,15 @@ export interface AuditReport {
   repository?: string;
   commitSha?: string;
   pullRequestNumber?: number;
+  diffMode?: boolean;
   scanners: ScannerSummary[];
   findings: AuditFinding[];
+  ignoredFindings: AuditFinding[];
   totalFindings: number;
   counts: Record<Severity, number>;
   passed: boolean;
   failureReason?: string;
+  sbomPath?: string;
 }
 
 export interface NemesisConfig {
@@ -51,6 +57,10 @@ export interface NemesisConfig {
   scanSast: boolean;
   scanSca: boolean;
   scanHygiene: boolean;
+  scanLicenses: boolean;
+  generateSbom: boolean;
+  diffMode: boolean;
+  diffBaseRef: string;
   maxFileSizeMb: number;
   requireLicense: boolean;
   failOnCritical: boolean;
@@ -62,5 +72,9 @@ export interface NemesisConfig {
   githubToken?: string;
   semgrepRules: string;
   trivySeverity: string;
+  slackWebhookUrl?: string;
+  discordWebhookUrl?: string;
+  configFile?: string;
+  changedFiles?: string[];
   verbose: boolean;
 }

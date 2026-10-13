@@ -1,6 +1,6 @@
 {
   "name": "nemesis",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "exports": "./src/main.ts",
   "tasks": {
     "start": "deno run --allow-all src/main.ts",
@@ -18,7 +18,9 @@
     "@std/cli": "jsr:@std/cli@^1.0.9",
     "@std/fmt/colors": "jsr:@std/fmt@^1.0.5/colors",
     "@std/fs": "jsr:@std/fs@^1.0.11",
-    "@std/path": "jsr:@std/path@^1.0.8"
+    "@std/path": "jsr:@std/path@^1.0.8",
+    "@std/yaml": "jsr:@std/yaml@^1.0.5",
+    "zod": "npm:zod@^3.23.8"
   },
   "compilerOptions": {
     "strict": true

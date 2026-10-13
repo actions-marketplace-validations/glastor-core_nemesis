@@ -6,12 +6,15 @@ export function generateMarkdownReport(report: AuditReport): string {
 
   const sections: string[] = [];
 
-  sections.push(`## 🛡️ Nemesis Security Audit Report`);
+  sections.push(`## 🛡️ Nemesis Security & Hygiene Audit Report`);
   sections.push(`![Status](${badgeUrl})`);
   sections.push("");
   sections.push(`> **Audit Target:** \`${report.targetPath}\` | **Date:** \`${report.timestamp}\``);
   if (report.commitSha) {
     sections.push(`> **Commit:** \`${report.commitSha.substring(0, 7)}\``);
+  }
+  if (report.diffMode) {
+    sections.push(`> ⚡ **Modo:** *Escaneo Diferencial (solo archivos modificados)*`);
   }
   sections.push("");
 
@@ -23,7 +26,10 @@ export function generateMarkdownReport(report: AuditReport): string {
   sections.push(`| **HIGH** | ${report.counts.HIGH} | ${report.counts.HIGH > 0 ? "⚠️ Alto riesgo" : "✅ Limpio"} |`);
   sections.push(`| **MEDIUM** | ${report.counts.MEDIUM} | ${report.counts.MEDIUM > 0 ? "🟡 Riesgo moderado" : "✅ Limpio"} |`);
   sections.push(`| **LOW / INFO** | ${report.counts.LOW + report.counts.INFO} | ℹ️ Información |`);
-  sections.push(`| **TOTAL** | **${report.totalFindings}** | ${report.passed ? "🟢 APROBADO" : "🔴 REPROBADO"} |`);
+  sections.push(`| **TOTAL ACTIVAS** | **${report.totalFindings}** | ${report.passed ? "🟢 APROBADO" : "🔴 REPROBADO"} |`);
+  if (report.ignoredFindings && report.ignoredFindings.length > 0) {
+    sections.push(`| *Excluidas (.nemesis.yml)* | *${report.ignoredFindings.length}* | 🙈 Suprimidas con justificación |`);
+  }
   sections.push("");
 
   // Scanner status table
@@ -43,6 +49,7 @@ export function generateMarkdownReport(report: AuditReport): string {
   const sast = report.findings.filter((f) => f.category === "SAST");
   const misconfig = report.findings.filter((f) => f.category === "MISCONFIG");
   const hygiene = report.findings.filter((f) => f.category === "HYGIENE");
+  const licenses = report.findings.filter((f) => f.category === "LICENSE");
 
   if (secrets.length > 0) {
     sections.push(`### 🚨 Secretos Expuestos (${secrets.length})`);
@@ -65,6 +72,18 @@ export function generateMarkdownReport(report: AuditReport): string {
       const fix = item.fixedVersion ? `\`${item.fixedVersion}\`` : "*Sin parche aún*";
       const cveLink = item.cve ? `[\`${item.cve}\`](https://nvd.nist.gov/vuln/detail/${item.cve})` : "-";
       sections.push(`| **${item.package ?? item.title}** | \`${item.installedVersion ?? "N/A"}\` | ${fix} | ${cveLink} | **${item.severity}** |`);
+    }
+    sections.push("");
+  }
+
+  if (licenses.length > 0) {
+    sections.push(`### 📜 Riesgo de Licencias Open Source (${licenses.length})`);
+    sections.push(`> ⚠️ **Copyleft:** Se detectaron paquetes con licencias restrictivas.`);
+    sections.push("");
+    sections.push(`| Paquete | Licencia | Severidad | Archivo |`);
+    sections.push(`| :--- | :---: | :---: | :--- |`);
+    for (const item of licenses) {
+      sections.push(`| **${item.package ?? item.title}** | \`${item.license ?? "N/A"}\` | 🟠 ${item.severity} | \`${item.file ?? "N/A"}\` |`);
     }
     sections.push("");
   }
@@ -102,8 +121,24 @@ export function generateMarkdownReport(report: AuditReport): string {
     sections.push("");
   }
 
+  // Ignored / Suppressed findings section
+  if (report.ignoredFindings && report.ignoredFindings.length > 0) {
+    sections.push(`<details><summary><b>🙈 Hallazgos Excluidos (.nemesis.yml - ${report.ignoredFindings.length})</b> (Click para expandir)</summary>\n`);
+    sections.push(`| ID / Regla | Archivo | Justificación de Exclusión |`);
+    sections.push(`| :--- | :--- | :--- |`);
+    for (const item of report.ignoredFindings) {
+      sections.push(`| \`${item.id}\` | \`${item.file ?? "N/A"}\` | *${item.ignoreReason ?? "Sin justificación"}* |`);
+    }
+    sections.push("\n</details>\n");
+  }
+
+  if (report.sbomPath) {
+    sections.push(`> 📄 **SBOM:** CycloneDX SBOM generado exitosamente en \`${report.sbomPath}\``);
+    sections.push("");
+  }
+
   if (report.findings.length === 0) {
-    sections.push(`### 🎉 ¡Excelente! No se encontraron vulnerabilidades en esta auditoría.`);
+    sections.push(`### 🎉 ¡Excelente! No se encontraron vulnerabilidades activas en esta auditoría.`);
     sections.push("");
   }
 

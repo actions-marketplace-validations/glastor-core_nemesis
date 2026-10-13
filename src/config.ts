@@ -34,12 +34,19 @@ export function loadConfig(cliArgs: string[]): NemesisConfig {
       "trivy-severity",
       "github-token",
       "max-file-size",
+      "diff-base",
+      "slack-webhook",
+      "discord-webhook",
+      "config",
     ],
     boolean: [
       "secrets",
       "sast",
       "sca",
       "hygiene",
+      "licenses",
+      "sbom",
+      "diff",
       "require-license",
       "all",
       "fail-on-critical",
@@ -55,6 +62,8 @@ export function loadConfig(cliArgs: string[]): NemesisConfig {
       h: "help",
       v: "verbose",
       a: "all",
+      c: "config",
+      d: "diff",
     },
     default: {
       path: ".",
@@ -62,6 +71,7 @@ export function loadConfig(cliArgs: string[]): NemesisConfig {
       "semgrep-rules": "p/security-audit",
       "trivy-severity": "UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL",
       "max-file-size": "10",
+      "diff-base": "origin/main",
       verbose: false,
     },
   });
@@ -73,7 +83,8 @@ export function loadConfig(cliArgs: string[]): NemesisConfig {
   const hasSastFlag = cliArgs.includes("--sast") || cliArgs.includes("--no-sast");
   const hasScaFlag = cliArgs.includes("--sca") || cliArgs.includes("--no-sca");
   const hasHygieneFlag = cliArgs.includes("--hygiene") || cliArgs.includes("--no-hygiene");
-  const anyExplicitModule = hasSecretsFlag || hasSastFlag || hasScaFlag || hasHygieneFlag;
+  const hasLicensesFlag = cliArgs.includes("--licenses") || cliArgs.includes("--no-licenses");
+  const anyExplicitModule = hasSecretsFlag || hasSastFlag || hasScaFlag || hasHygieneFlag || hasLicensesFlag;
   const defaultScan = scanAll || !anyExplicitModule;
 
   const targetPath = isGitHubActions
@@ -95,6 +106,22 @@ export function loadConfig(cliArgs: string[]): NemesisConfig {
   const scanHygiene = isGitHubActions
     ? getActionBooleanInput("scan-hygiene", true)
     : (hasHygieneFlag ? parsed.hygiene : defaultScan);
+
+  const scanLicenses = isGitHubActions
+    ? getActionBooleanInput("scan-licenses", true)
+    : (hasLicensesFlag ? parsed.licenses : defaultScan);
+
+  const generateSbom = isGitHubActions
+    ? getActionBooleanInput("generate-sbom", true)
+    : (parsed.sbom ?? true);
+
+  const diffMode = isGitHubActions
+    ? getActionBooleanInput("diff-mode", false)
+    : (parsed.diff ?? false);
+
+  const diffBaseRef = isGitHubActions
+    ? getActionInput("diff-base-ref", parsed["diff-base"])
+    : parsed["diff-base"];
 
   const maxFileSizeMbStr = isGitHubActions
     ? getActionInput("max-file-size-mb", parsed["max-file-size"])
@@ -141,12 +168,28 @@ export function loadConfig(cliArgs: string[]): NemesisConfig {
     ? getActionInput("trivy-severity", parsed["trivy-severity"])
     : parsed["trivy-severity"];
 
+  const slackWebhookUrl = isGitHubActions
+    ? (getActionInput("slack-webhook-url", "") || Deno.env.get("SLACK_WEBHOOK_URL"))
+    : (parsed["slack-webhook"] || Deno.env.get("SLACK_WEBHOOK_URL"));
+
+  const discordWebhookUrl = isGitHubActions
+    ? (getActionInput("discord-webhook-url", "") || Deno.env.get("DISCORD_WEBHOOK_URL"))
+    : (parsed["discord-webhook"] || Deno.env.get("DISCORD_WEBHOOK_URL"));
+
+  const configFile = isGitHubActions
+    ? getActionInput("config-file", parsed.config || "")
+    : (parsed.config || "");
+
   return {
     targetPath,
     scanSecrets,
     scanSast,
     scanSca,
     scanHygiene,
+    scanLicenses,
+    generateSbom,
+    diffMode,
+    diffBaseRef,
     maxFileSizeMb,
     requireLicense,
     failOnCritical,
@@ -158,13 +201,16 @@ export function loadConfig(cliArgs: string[]): NemesisConfig {
     githubToken,
     semgrepRules,
     trivySeverity,
+    slackWebhookUrl,
+    discordWebhookUrl,
+    configFile,
     verbose: parsed.verbose,
   };
 }
 
 export function showHelp(): void {
   console.log(`
-Nemesis - Universal Repository Security & Hygiene Auditor (Deno + TypeScript)
+Nemesis - Universal Repository Security, Hygiene & Compliance Auditor (Deno + TypeScript)
 
 USAGE:
   deno run --allow-all src/main.ts [OPTIONS]
@@ -172,13 +218,20 @@ USAGE:
 
 OPTIONS:
   -p, --path <DIR>          Target directory to audit (default: ".")
-      --all                 Enable all scan modules (secrets, sast, sca, hygiene)
+  -c, --config <FILE>       Path to .nemesis.yml configuration / suppression file
+  -d, --diff                Enable differential scanning (audit only modified files in PR)
+      --diff-base <REF>     Base Git ref to compare against (default: "origin/main")
+      --all                 Enable all scan modules (secrets, sast, sca, hygiene, licenses)
       --secrets             Run secret scanning (Gitleaks)
       --sast                Run static application security testing (Semgrep)
       --sca                 Run software composition analysis (Trivy)
       --hygiene             Run repository hygiene & junk cleanup checks
+      --licenses            Run license compliance scan
+      --sbom                Generate CycloneDX SBOM report (default: true)
       --max-file-size <MB>  Max file size before warning in MB (default: 10)
       --require-license     Require a LICENSE file in repository root
+      --slack-webhook <URL> Dispatch Slack card notification on audit finish
+      --discord-webhook <U> Dispatch Discord card notification on audit finish
       --fail-on-critical    Exit with code 1 if CRITICAL vulnerabilities exist
       --fail-on-high        Exit with code 1 if HIGH or CRITICAL exist
       --fail-on-medium      Exit with code 1 if MEDIUM or higher exist
