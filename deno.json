@@ -4,8 +4,8 @@
   "license": "MIT",
   "exports": "./src/main.ts",
   "tasks": {
-    "start": "deno run --allow-all src/main.ts",
-    "scan": "deno run --allow-all src/main.ts --all",
+    "start": "deno run --env --allow-all src/main.ts",
+    "scan": "deno run --env --allow-all src/main.ts --all",
     "compile": "deno compile --allow-all --output bin/nemesis src/main.ts",
     "compile:linux": "deno compile --allow-all --target x86_64-unknown-linux-gnu --output bin/nemesis-linux src/main.ts",
     "compile:windows": "deno compile --allow-all --target x86_64-pc-windows-msvc --output bin/nemesis-windows.exe src/main.ts",

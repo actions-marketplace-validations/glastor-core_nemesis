@@ -21,6 +21,7 @@ desktop.ini
 npm-debug.log*
 yarn-error.log*
 *.bak
-*.swp
-.env.local
-.env.*.local
+# Environment & secrets
+.env
+.env.*
+!.env.example
