@@ -1,0 +1,27 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "Nemesis: Universal Security, Hygiene & Compliance Auditor"
+type: software
+version: "1.1.0"
+date-released: "2026-10-13"
+authors:
+  - family-names: "Cardoso"
+    given-names: "Andrés Antonio"
+    email: "glastor.info@gmail.com"
+repository-code: "https://github.com/glastor-dev/nemesis"
+url: "https://github.com/glastor-dev/nemesis"
+license: MIT
+keywords:
+  - "DevSecOps"
+  - "GitHub Actions"
+  - "Security Audit"
+  - "SAST"
+  - "SCA"
+  - "Secret Scanning"
+  - "Repo Hygiene"
+  - "Auto-Remediation"
+  - "CycloneDX"
+  - "SBOM"
+  - "Deno"
+  - "TypeScript"
+abstract: "Acción universal de GitHub y motor CLI en Deno y TypeScript para la auditoría continua de seguridad (SAST, SCA, Secretos, Licencias Copyleft, CycloneDX SBOM) y auto-remediación activa de higiene en repositorios de código abierto y empresariales."
