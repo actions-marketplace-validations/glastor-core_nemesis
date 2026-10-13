@@ -1,12 +1,19 @@
-# 🛡️ Nemesis — Auditor Universal de Seguridad, Higiene y Cumplimiento para Repositorios
+# 🛡️ Nemesis — Auditor & Bot de Auto-Remediación para Repositorios
 
-> **GitHub Action y motor CLI de DevSecOps, Repo Hygiene & Compliance construido con Deno y TypeScript.**  
-> Audita automáticamente secretos expuestos, vulnerabilidades de código (SAST), dependencias vulnerables (SCA), licencias open source (Copyleft), generación de SBOM (CycloneDX), limpieza e higiene del repositorio y supresión de falsos positivos con `.nemesis.yml`.
+> **GitHub Action y motor CLI de DevSecOps, Repo Hygiene, Auto-Fix & Compliance construido con Deno y TypeScript.**  
+> Audita automáticamente secretos expuestos, vulnerabilidades de código (SAST), dependencias vulnerables (SCA), licencias open source (Copyleft), generación de SBOM (CycloneDX), limpieza e higiene del repositorio, **commits automáticos de limpieza (Auto-Fix)** y **sugerencias interactivas de 1-clic en Pull Requests**.
 
 ---
 
 ## 🚀 Capacidades Principales
 
+* 🤖 **Commits Automáticos de Limpieza (Auto-Fix):**
+  * Elimina automáticamente archivos tóxicos o temporales (`.DS_Store`, `Thumbs.db`, `.env.local`, logs) que se hayan colado en el repositorio.
+  * Añade automáticamente las reglas correspondientes a `.gitignore`.
+  * Realiza un commit automático del bot (`chore(nemesis): auto-clean toxic files [skip ci]`) y lo sube a la rama del Pull Request.
+* 💡 **Sugerencias Interactivas de 1-Clic en PRs (GitHub Review Suggestions):**
+  * Para dependencias vulnerables o credenciales expuestas, genera comentarios de revisión en el código con bloques de sugerencia interactiva.
+  * El desarrollador solo hace clic en **"Commit suggestion"** en GitHub para aplicar la corrección de inmediato sin abrir su editor.
 * 🔑 **Secret Scanning (Gitleaks):** Detecta claves de API, tokens privados, certificados y contraseñas filtradas en el código e historial de commits.
 * 🛡️ **SAST - Análisis Estático de Código (Semgrep):** Encuentra vulnerabilidades comunes (inyecciones SQL, XSS, RCE, criptografía insegura) en más de 30 lenguajes sin compilar.
 * 📦 **SCA - Análisis de Dependencias (Trivy):** Detecta CVEs conocidos en gestores de paquetes (`npm`, `pip`, `go`, `cargo`, `maven`) y fallos de infraestructura (Dockerfile, K8s).
@@ -28,14 +35,12 @@
   * Comentario Markdown tipo semáforo con actualización *in-place* (sin spam) y anotaciones directas en el diff del PR.
 * 📑 **Integración SARIF Nativa:**
   * Alertas visibles en la pestaña **Security -> Code Scanning** de GitHub.
-* 🚀 **Caché Automático:**
-  * Preserva la base de datos de vulnerabilidades entre ejecuciones mediante `actions/cache@v4`.
 
 ---
 
 ## 📦 Uso Rápido: Integrar en cualquier Repositorio
 
-Para auditar cualquier repositorio automáticamente en cada *push* o *pull request*, crea el archivo `.github/workflows/security-audit.yml`:
+Para auditar y **resolver automáticamente** en cualquier repositorio, crea el archivo `.github/workflows/security-audit.yml`:
 
 ```yaml
 name: Security & Hygiene Audit
@@ -47,9 +52,9 @@ on:
     branches: [ main, master ]
 
 permissions:
-  contents: read
-  pull-requests: write
-  security-events: write
+  contents: write            # Requerido para auto-commits de limpieza
+  pull-requests: write       # Requerido para comentarios y sugerencias de 1-click
+  security-events: write     # Requerido para alertas SARIF en la pestaña Security
 
 jobs:
   audit:
@@ -61,16 +66,16 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Ejecutar Auditor Nemesis
+      - name: Ejecutar Auditor & Remediation Bot
         uses: glastor-dev/nemesis@master
         with:
-          fail-on-critical: false     # Ponlo en 'true' para bloquear merges con fallos críticos
+          auto-fix: true              # Limpia archivos basura y comitea automáticamente
+          pr-suggestions: true        # Genera sugerencias de 1-clic para dependencias
           diff-mode: true             # Escanea únicamente lo modificado en el PR
           scan-hygiene: true          # Revisa limpieza y archivos no deseados
           scan-licenses: true         # Revisa licencias restrictivas
           generate-sbom: true         # Genera reporte CycloneDX SBOM
-          slack-webhook-url: ${{ secrets.SLACK_WEBHOOK }} # Opcional
-          upload-sarif: true
+          upload-sarif: true          # Muestra alertas en la pestaña de Seguridad
 ```
 
 ---
@@ -103,6 +108,8 @@ settings:
 | Parámetro | Tipo | Por Defecto | Descripción |
 | :--- | :---: | :---: | :--- |
 | `target-path` | string | `.` | Directorio del proyecto a auditar. |
+| `auto-fix` | boolean | `false` | Elimina archivos basura y hace auto-commit de limpieza. |
+| `pr-suggestions` | boolean | `true` | Publica sugerencias de 1-clic en el PR para arreglar vulnerabilidades. |
 | `diff-mode` | boolean | `false` | Escanea solo archivos modificados en el PR/commit actual. |
 | `diff-base-ref` | string | `'origin/main'` | Rama base para la comparación diferencial. |
 | `scan-secrets` | boolean | `true` | Habilita el escaneo de secretos (Gitleaks). |
@@ -130,17 +137,11 @@ settings:
 # Auditar todo el repositorio (Seguridad + Higiene + Licencias)
 deno task start --path .
 
-# Modo diferencial: auditar solo archivos modificados frente a main
+# Auditar y limpiar archivos basura automáticamente
+deno task start --path . --hygiene --auto-fix
+
+# Modo diferencial: auditar solo archivos modificados frente a master
 deno task start --path . --diff
-
-# Usar archivo de exclusiones personalizado
-deno task start --path . --config ./mi-config.yml
-
-# Auditar solo higiene y limpieza
-deno task start --path . --hygiene --max-file-size 5
-
-# Enviar alerta a Discord/Slack al finalizar
-deno task start --path . --discord-webhook https://discord.com/api/webhooks/...
 
 # Compilar binario autónomo para Windows/Linux/macOS
 deno task compile
@@ -148,46 +149,5 @@ deno task compile
 
 ---
 
-## 📁 Estructura del Proyecto
-
-```text
-nemesis/
-├── .github/
-│   └── workflows/
-│       ├── ci.yml                 # Pipeline CI y prueba de compilación de Nemesis
-│       └── audit.yml              # Reusable Workflow para invocar desde otros repos
-├── src/
-│   ├── types.ts                   # Interfaces y tipos del dominio de seguridad e higiene
-│   ├── config.ts                  # Parser unificado de inputs de GitHub y CLI
-│   ├── config/
-│   │   └── schema.ts              # Validador Zod y motor de exclusiones (.nemesis.yml)
-│   ├── main.ts                    # Punto de entrada principal y orquestador
-│   ├── scanners/
-│   │   ├── base.ts                # Interfaz base de escáneres
-│   │   ├── gitleaks.ts            # Escáner de secretos
-│   │   ├── semgrep.ts             # Escáner SAST
-│   │   ├── trivy.ts               # Escáner SCA y dependencias
-│   │   ├── hygiene.ts             # Escáner nativo de limpieza e higiene del repo
-│   │   └── license.ts             # Escáner de licencias y generador de SBOM
-│   ├── reporters/
-│   │   ├── console.ts             # Salida formateada con colores para consola
-│   │   ├── markdown.ts            # Generador de reportes en Markdown para PRs
-│   │   ├── sarif.ts               # Generador de reportes estándar SARIF 2.1.0
-│   │   └── webhook.ts             # Notificador para Slack y Discord
-│   ├── github/
-│   │   ├── pr-commenter.ts        # Comentador idempotente en PRs (sin spam)
-│   │   └── annotator.ts           # Anotador de líneas en el diff de GitHub
-│   └── utils/
-│       ├── diff.ts                # Motor de escaneo diferencial por Git
-│       ├── exec.ts                # Ejecutor seguro de subprocesos con timeout
-│       └── tool-checker.ts        # Comprobador y fallback de herramientas
-├── .nemesis.yml                   # Plantilla de configuración de falsos positivos
-├── action.yml                     # Definición de la GitHub Composite Action con caché
-├── deno.json                      # Configuración, tareas y dependencias de Deno
-└── README.md                      # Documentación completa
-```
-
----
-
 ## 📄 Licencia
-Distribuido bajo la licencia MIT.
+Distribuido bajo la [Licencia MIT](LICENSE).
