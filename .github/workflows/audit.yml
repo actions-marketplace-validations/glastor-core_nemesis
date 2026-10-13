@@ -1,0 +1,73 @@
+name: Nemesis Universal Security Audit
+
+on:
+  workflow_call:
+    inputs:
+      target-path:
+        description: 'Directory to audit'
+        required: false
+        default: '.'
+        type: string
+      fail-on-critical:
+        description: 'Fail pipeline on CRITICAL vulnerabilities'
+        required: false
+        default: false
+        type: boolean
+      fail-on-high:
+        description: 'Fail pipeline on HIGH or CRITICAL vulnerabilities'
+        required: false
+        default: false
+        type: boolean
+      scan-secrets:
+        description: 'Run secret scanning (Gitleaks)'
+        required: false
+        default: true
+        type: boolean
+      scan-sast:
+        description: 'Run SAST code scanning (Semgrep)'
+        required: false
+        default: true
+        type: boolean
+      scan-sca:
+        description: 'Run SCA dependency scanning (Trivy)'
+        required: false
+        default: true
+        type: boolean
+      post-pr-comment:
+        description: 'Post PR comment with summary'
+        required: false
+        default: true
+        type: boolean
+    secrets:
+      token:
+        description: 'GitHub token for PR commenting and SARIF upload'
+        required: false
+
+permissions:
+  contents: read
+  pull-requests: write
+  security-events: write
+  issues: write
+
+jobs:
+  security-audit:
+    name: Security & Quality Audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Nemesis Action
+        uses: ./
+        with:
+          target-path: ${{ inputs.target-path }}
+          fail-on-critical: ${{ inputs.fail-on-critical }}
+          fail-on-high: ${{ inputs.fail-on-high }}
+          scan-secrets: ${{ inputs.scan-secrets }}
+          scan-sast: ${{ inputs.scan-sast }}
+          scan-sca: ${{ inputs.scan-sca }}
+          post-pr-comment: ${{ inputs.post-pr-comment }}
+          github-token: ${{ secrets.token || secrets.GITHUB_TOKEN }}
+          upload-sarif: 'true'

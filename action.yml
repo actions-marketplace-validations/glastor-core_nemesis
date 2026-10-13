@@ -1,0 +1,149 @@
+name: 'Nemesis Universal Security Auditor'
+description: 'Automated DevSecOps security audit action (Secrets, SAST, SCA) powered by Deno & TypeScript'
+author: 'Nemesis Team'
+branding:
+  icon: 'shield'
+  color: 'purple'
+
+inputs:
+  target-path:
+    description: 'Path of repository or directory to audit'
+    required: false
+    default: '.'
+  scan-secrets:
+    description: 'Enable Gitleaks secret scanning'
+    required: false
+    default: 'true'
+  scan-sast:
+    description: 'Enable Semgrep SAST scanning'
+    required: false
+    default: 'true'
+  scan-sca:
+    description: 'Enable Trivy SCA/dependency scanning'
+    required: false
+    default: 'true'
+  fail-on-critical:
+    description: 'Fail the step if CRITICAL vulnerabilities are found'
+    required: false
+    default: 'false'
+  fail-on-high:
+    description: 'Fail the step if HIGH or CRITICAL vulnerabilities are found'
+    required: false
+    default: 'false'
+  fail-on-medium:
+    description: 'Fail the step if MEDIUM or higher vulnerabilities are found'
+    required: false
+    default: 'false'
+  post-pr-comment:
+    description: 'Post a Markdown summary comment on the Pull Request'
+    required: false
+    default: 'true'
+  create-annotations:
+    description: 'Annotate code lines directly on GitHub Pull Request diff'
+    required: false
+    default: 'true'
+  upload-sarif:
+    description: 'Upload SARIF results to GitHub Security tab'
+    required: false
+    default: 'true'
+  output-dir:
+    description: 'Directory where audit reports are saved'
+    required: false
+    default: '.nemesis-reports'
+  github-token:
+    description: 'GitHub token for PR commenting and API access'
+    required: false
+    default: ${{ github.token }}
+  semgrep-rules:
+    description: 'Semgrep rule pack or config path'
+    required: false
+    default: 'p/security-audit'
+  trivy-severity:
+    description: 'Trivy severities to capture'
+    required: false
+    default: 'UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL'
+
+outputs:
+  passed:
+    description: 'Whether the audit passed threshold criteria (true/false)'
+    value: ${{ steps.run-nemesis.outputs.passed }}
+  total-findings:
+    description: 'Total number of findings discovered'
+    value: ${{ steps.run-nemesis.outputs.total-findings }}
+  critical-count:
+    description: 'Number of critical findings'
+    value: ${{ steps.run-nemesis.outputs.critical-count }}
+  high-count:
+    description: 'Number of high findings'
+    value: ${{ steps.run-nemesis.outputs.high-count }}
+  report-json:
+    description: 'Path to generated JSON report'
+    value: ${{ steps.run-nemesis.outputs.report-json }}
+  report-md:
+    description: 'Path to generated Markdown report'
+    value: ${{ steps.run-nemesis.outputs.report-md }}
+  report-sarif:
+    description: 'Path to generated SARIF report'
+    value: ${{ steps.run-nemesis.outputs.report-sarif }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup Deno Runtime
+      uses: denoland/setup-deno@v2
+      with:
+        deno-version: v2.x
+
+    - name: Ensure Audit Tools on Linux Runner
+      if: runner.os == 'Linux'
+      shell: bash
+      run: |
+        # Install Gitleaks if missing
+        if ! command -v gitleaks &> /dev/null && [ "${{ inputs.scan-secrets }}" = "true" ]; then
+          echo "[Nemesis] Installing Gitleaks..."
+          curl -sSL -o /tmp/gitleaks.tar.gz https://github.com/gitleaks/gitleaks/releases/download/v8.21.2/gitleaks_8.21.2_linux_x64.tar.gz
+          tar -xzf /tmp/gitleaks.tar.gz -C /tmp
+          sudo mv /tmp/gitleaks /usr/local/bin/gitleaks
+          rm -f /tmp/gitleaks.tar.gz
+        fi
+
+        # Install Semgrep if missing
+        if ! command -v semgrep &> /dev/null && [ "${{ inputs.scan-sast }}" = "true" ]; then
+          echo "[Nemesis] Installing Semgrep..."
+          python3 -m pip install --upgrade semgrep 2>/dev/null || true
+        fi
+
+        # Install Trivy if missing
+        if ! command -v trivy &> /dev/null && [ "${{ inputs.scan-sca }}" = "true" ]; then
+          echo "[Nemesis] Installing Trivy..."
+          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sudo sh -s -- -b /usr/local/bin v0.58.2
+        fi
+
+    - name: Run Nemesis Auditor
+      id: run-nemesis
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+        INPUT_TARGET_PATH: ${{ inputs.target-path }}
+        INPUT_SCAN_SECRETS: ${{ inputs.scan-secrets }}
+        INPUT_SCAN_SAST: ${{ inputs.scan-sast }}
+        INPUT_SCAN_SCA: ${{ inputs.scan-sca }}
+        INPUT_FAIL_ON_CRITICAL: ${{ inputs.fail-on-critical }}
+        INPUT_FAIL_ON_HIGH: ${{ inputs.fail-on-high }}
+        INPUT_FAIL_ON_MEDIUM: ${{ inputs.fail-on-medium }}
+        INPUT_POST_PR_COMMENT: ${{ inputs.post-pr-comment }}
+        INPUT_CREATE_ANNOTATIONS: ${{ inputs.create-annotations }}
+        INPUT_OUTPUT_DIR: ${{ inputs.output-dir }}
+        INPUT_GITHUB_TOKEN: ${{ inputs.github-token }}
+        INPUT_SEMGREP_RULES: ${{ inputs.semgrep-rules }}
+        INPUT_TRIVY_SEVERITY: ${{ inputs.trivy-severity }}
+      run: |
+        deno run --allow-all "${{ github.action_path }}/src/main.ts"
+
+    - name: Upload SARIF to GitHub Security Tab
+      if: ${{ inputs.upload-sarif == 'true' && hashFiles(format('{0}/nemesis-report.sarif', inputs.output-dir)) != '' }}
+      uses: github/codeql-action/upload-sarif@v3
+      with:
+        sarif_file: ${{ inputs.output-dir }}/nemesis-report.sarif
+        category: 'nemesis-security-audit'
+      continue-on-error: true

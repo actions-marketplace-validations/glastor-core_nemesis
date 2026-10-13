@@ -1,0 +1,16 @@
+# Binaries
+bin/
+*.exe
+
+# Reports
+.nemesis-reports/
+.test-reports/
+*-report.json
+*-report.md
+*-report.sarif
+
+# OS & Editors
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

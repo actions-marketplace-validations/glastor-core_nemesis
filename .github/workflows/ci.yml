@@ -1,0 +1,32 @@
+name: CI & Self-Audit
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  test-and-check:
+    name: Lint, Type Check & Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Type Check
+        run: deno check src/main.ts
+
+      - name: Compile Standalone Binaries (Smoke Test)
+        run: |
+          deno compile --allow-all --output bin/nemesis src/main.ts
+          ./bin/nemesis --help
+
+      - name: Run Nemesis Self-Audit
+        run: |
+          ./bin/nemesis --path . --output-dir .test-reports
