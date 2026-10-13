@@ -1,6 +1,8 @@
-import { AuditFinding, AuditReport, Severity } from "../types.ts";
+import type { AuditReport, Severity } from "../types.ts";
 
-function mapSeverityToSarifLevel(severity: Severity): "error" | "warning" | "note" {
+function mapSeverityToSarifLevel(
+  severity: Severity,
+): "error" | "warning" | "note" {
   switch (severity) {
     case "CRITICAL":
     case "HIGH":
@@ -15,7 +17,10 @@ function mapSeverityToSarifLevel(severity: Severity): "error" | "warning" | "not
 }
 
 export function generateSarifReport(report: AuditReport): string {
-  const rulesMap = new Map<string, { id: string; name: string; description: string }>();
+  const rulesMap = new Map<
+    string,
+    { id: string; name: string; description: string }
+  >();
 
   for (const f of report.findings) {
     const ruleKey = f.ruleId || f.title;
@@ -73,7 +78,8 @@ export function generateSarifReport(report: AuditReport): string {
   });
 
   const sarifDocument = {
-    $schema: "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+    $schema:
+      "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
     version: "2.1.0",
     runs: [
       {

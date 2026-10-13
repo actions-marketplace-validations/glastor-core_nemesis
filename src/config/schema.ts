@@ -2,14 +2,16 @@ import { z } from "zod";
 import * as yaml from "@std/yaml";
 import { join } from "@std/path";
 import { exists } from "@std/fs/exists";
-import { AuditFinding } from "../types.ts";
+import type { AuditFinding } from "../types.ts";
 
 export const IgnoreRuleSchema = z.object({
   id: z.string().optional(),
   rule: z.string().optional(),
   cve: z.string().optional(),
   path: z.string().optional(),
-  reason: z.string({ required_error: "Debes especificar una 'reason' justificando la exclusión" }),
+  reason: z.string({
+    required_error: "Debes especificar una 'reason' justificando la exclusión",
+  }),
   expires: z.string().optional(), // ISO date "YYYY-MM-DD"
 });
 
@@ -30,13 +32,11 @@ export async function loadNemesisFileConfig(
   targetPath: string,
   customConfigPath?: string,
 ): Promise<NemesisFileConfig | null> {
-  const possiblePaths = customConfigPath
-    ? [customConfigPath]
-    : [
-        join(targetPath, ".nemesis.yml"),
-        join(targetPath, ".nemesis.yaml"),
-        join(targetPath, ".nemesis.json"),
-      ];
+  const possiblePaths = customConfigPath ? [customConfigPath] : [
+    join(targetPath, ".nemesis.yml"),
+    join(targetPath, ".nemesis.yaml"),
+    join(targetPath, ".nemesis.json"),
+  ];
 
   for (const p of possiblePaths) {
     if (await exists(p)) {
@@ -50,7 +50,10 @@ export async function loadNemesisFileConfig(
         }
         return NemesisFileConfigSchema.parse(parsedRaw);
       } catch (err) {
-        console.warn(`[Nemesis] Advertencia: Error parseando archivo de configuración "${p}":`, err);
+        console.warn(
+          `[Nemesis] Advertencia: Error parseando archivo de configuración "${p}":`,
+          err,
+        );
       }
     }
   }
@@ -90,13 +93,19 @@ export function filterIgnoredFindings(
       }
 
       // Check Rule/Check ID match
-      if (rule.rule && finding.ruleId && finding.ruleId.toLowerCase().includes(rule.rule.toLowerCase())) {
+      if (
+        rule.rule && finding.ruleId &&
+        finding.ruleId.toLowerCase().includes(rule.rule.toLowerCase())
+      ) {
         matchedRule = rule;
         break;
       }
 
       // Check CVE match
-      if (rule.cve && finding.cve && finding.cve.toUpperCase() === rule.cve.toUpperCase()) {
+      if (
+        rule.cve && finding.cve &&
+        finding.cve.toUpperCase() === rule.cve.toUpperCase()
+      ) {
         matchedRule = rule;
         break;
       }
@@ -105,7 +114,10 @@ export function filterIgnoredFindings(
       if (rule.path && finding.file) {
         const normalizedFile = finding.file.replace(/\\/g, "/");
         const normalizedRule = rule.path.replace(/\\/g, "/");
-        if (normalizedFile.includes(normalizedRule) || normalizedFile === normalizedRule) {
+        if (
+          normalizedFile.includes(normalizedRule) ||
+          normalizedFile === normalizedRule
+        ) {
           matchedRule = rule;
           break;
         }

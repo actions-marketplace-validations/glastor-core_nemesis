@@ -1,0 +1,60 @@
+name: Release Standalone Binaries
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    name: Compile & Publish Binaries
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Deno Runtime
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Run Type Check
+        run: deno check src/main.ts
+
+      - name: Run Automated Test Suite
+        run: deno test --allow-all
+
+      - name: Compile Multi-Platform Standalone Binaries
+        run: |
+          mkdir -p dist
+          echo "Compiling for Linux x86_64..."
+          deno compile --allow-all --target x86_64-unknown-linux-gnu --output dist/nemesis-linux-x86_64 src/main.ts
+
+          echo "Compiling for Windows x86_64..."
+          deno compile --allow-all --target x86_64-pc-windows-msvc --output dist/nemesis-windows-x86_64.exe src/main.ts
+
+          echo "Compiling for macOS x86_64 (Intel)..."
+          deno compile --allow-all --target x86_64-apple-darwin --output dist/nemesis-darwin-x86_64 src/main.ts
+
+          echo "Compiling for macOS ARM64 (Apple Silicon)..."
+          deno compile --allow-all --target aarch64-apple-darwin --output dist/nemesis-darwin-arm64 src/main.ts
+
+      - name: Generate SHA-256 Checksums
+        run: |
+          cd dist
+          sha256sum * > checksums.txt
+          cat checksums.txt
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/nemesis-linux-x86_64
+            dist/nemesis-windows-x86_64.exe
+            dist/nemesis-darwin-x86_64
+            dist/nemesis-darwin-arm64
+            dist/checksums.txt
+          generate_release_notes: true

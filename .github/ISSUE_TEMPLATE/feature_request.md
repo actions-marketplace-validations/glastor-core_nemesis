@@ -6,10 +6,14 @@ labels: ["enhancement"]
 ---
 
 ### 💡 Resumen de la Propuesta
-Describe de forma clara y concisa la mejora o funcionalidad que propones incorporar a Nemesis.
+
+Describe de forma clara y concisa la mejora o funcionalidad que propones
+incorporar a Nemesis.
 
 ### 🛡️ Área o Componente Involucrado
+
 Indica el área principal (marca con `x`):
+
 - [ ] Nuevo Scanner o Regla de Seguridad (SAST, SCA, Secretos)
 - [ ] Regla de Higiene de Repositorio o Archivos Tóxicos
 - [ ] Capacidad de Auto-Remediación / Auto-Fix / Limpieza de Commits
@@ -19,13 +23,21 @@ Indica el área principal (marca con `x`):
 - [ ] Otro
 
 ### 🎯 Problema o Necesidad que Resuelve
-¿Qué limitación, fricción o riesgo de seguridad existe hoy que esta funcionalidad resolvería?
+
+¿Qué limitación, fricción o riesgo de seguridad existe hoy que esta
+funcionalidad resolvería?
 
 ### 🚀 Solución o Implementación Sugerida
-Describe la lógica deseada, sintaxis de configuración (`.nemesis.yml`) o flags de línea de comandos propuestas.
+
+Describe la lógica deseada, sintaxis de configuración (`.nemesis.yml`) o flags
+de línea de comandos propuestas.
 
 ### 🔄 Alternativas Consideradas
-¿Has evaluado herramientas o enfoques alternativos? ¿Por qué esta solución es preferible para Nemesis?
+
+¿Has evaluado herramientas o enfoques alternativos? ¿Por qué esta solución es
+preferible para Nemesis?
 
 ### 📌 Contexto Adicional
-Enlaces a especificaciones (SPDX, SARIF, GitHub Docs), ejemplos de código o capturas.
+
+Enlaces a especificaciones (SPDX, SARIF, GitHub Docs), ejemplos de código o
+capturas.

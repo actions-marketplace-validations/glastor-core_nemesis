@@ -1,6 +1,6 @@
 import * as github from "@actions/github";
 import * as core from "@actions/core";
-import { AuditFinding, AuditReport } from "../types.ts";
+import type { AuditReport } from "../types.ts";
 
 interface ReviewComment {
   path: string;
@@ -15,11 +15,14 @@ export async function postPullRequestSuggestions(
 ): Promise<number> {
   const context = github.context;
   const prNumber = context.payload.pull_request?.number;
-  const commitId = context.payload.pull_request?.head?.sha || Deno.env.get("GITHUB_SHA");
+  const commitId = context.payload.pull_request?.head?.sha ||
+    Deno.env.get("GITHUB_SHA");
 
   if (!prNumber || !commitId) {
     if (core.isDebug()) {
-      core.debug("[Nemesis Suggestions] No es un evento Pull Request con commit ID. Omitiendo.");
+      core.debug(
+        "[Nemesis Suggestions] No es un evento Pull Request con commit ID. Omitiendo.",
+      );
     }
     return 0;
   }
@@ -37,7 +40,9 @@ export async function postPullRequestSuggestions(
       const suggestionBody = [
         `### 🛡️ Nemesis Auto-Remediation: Vulnerabilidad en Dependencia`,
         `> **${f.title}** (${f.severity})`,
-        `\`${f.package}\` versión instalada: \`${f.installedVersion ?? "N/A"}\` -> Corregida en: \`${f.fixedVersion}\``,
+        `\`${f.package}\` versión instalada: \`${
+          f.installedVersion ?? "N/A"
+        }\` -> Corregida en: \`${f.fixedVersion}\``,
         "",
         "```suggestion",
         `    "${f.package}": "^${f.fixedVersion}",`,
@@ -112,14 +117,21 @@ export async function postPullRequestSuggestions(
       pull_number: prNumber,
       commit_id: commitId,
       event: "COMMENT",
-      body: `### 🛡️ Nemesis: Sugerencias Interactivas de Corrección (${topSuggestions.length})\nSe generaron sugerencias de 1-clic para corregir las vulnerabilidades detectadas en este Pull Request.`,
+      body:
+        `### 🛡️ Nemesis: Sugerencias Interactivas de Corrección (${topSuggestions.length})\nSe generaron sugerencias de 1-clic para corregir las vulnerabilidades detectadas en este Pull Request.`,
       comments: topSuggestions,
     });
 
-    core.info(`[Nemesis] Publicadas ${topSuggestions.length} sugerencias interactivas en el PR #${prNumber}`);
+    core.info(
+      `[Nemesis] Publicadas ${topSuggestions.length} sugerencias interactivas en el PR #${prNumber}`,
+    );
     return topSuggestions.length;
   } catch (err) {
-    core.warning(`[Nemesis] No se pudieron publicar sugerencias de review en el PR: ${err instanceof Error ? err.message : String(err)}`);
+    core.warning(
+      `[Nemesis] No se pudieron publicar sugerencias de review en el PR: ${
+        err instanceof Error ? err.message : String(err)
+      }`,
+    );
     return 0;
   }
 }

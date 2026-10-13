@@ -1,6 +1,12 @@
 export type Severity = "CRITICAL" | "HIGH" | "MEDIUM" | "LOW" | "INFO";
 
-export type FindingCategory = "SECRET" | "SAST" | "SCA" | "MISCONFIG" | "HYGIENE" | "LICENSE";
+export type FindingCategory =
+  | "SECRET"
+  | "SAST"
+  | "SCA"
+  | "MISCONFIG"
+  | "HYGIENE"
+  | "LICENSE";
 
 export interface AuditFinding {
   id: string;

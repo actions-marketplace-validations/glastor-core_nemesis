@@ -31,7 +31,8 @@ export async function upsertPrComment(
     });
 
     const existingComment = comments.find((c) =>
-      c.body?.includes(COMMENT_TAG) || c.body?.includes("## 🛡️ Nemesis Security Audit Report")
+      c.body?.includes(COMMENT_TAG) ||
+      c.body?.includes("## 🛡️ Nemesis Security Audit Report")
     );
 
     if (existingComment) {
@@ -41,7 +42,9 @@ export async function upsertPrComment(
         comment_id: existingComment.id,
         body: fullBody,
       });
-      core.info(`[Nemesis] Updated existing security audit comment #${existingComment.id} on PR #${prNumber}`);
+      core.info(
+        `[Nemesis] Updated existing security audit comment #${existingComment.id} on PR #${prNumber}`,
+      );
     } else {
       await octokit.rest.issues.createComment({
         owner,
@@ -49,9 +52,15 @@ export async function upsertPrComment(
         issue_number: prNumber,
         body: fullBody,
       });
-      core.info(`[Nemesis] Created new security audit comment on PR #${prNumber}`);
+      core.info(
+        `[Nemesis] Created new security audit comment on PR #${prNumber}`,
+      );
     }
   } catch (err) {
-    core.warning(`[Nemesis] Could not post PR comment: ${err instanceof Error ? err.message : String(err)}`);
+    core.warning(
+      `[Nemesis] Could not post PR comment: ${
+        err instanceof Error ? err.message : String(err)
+      }`,
+    );
   }
 }

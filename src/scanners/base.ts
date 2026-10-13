@@ -1,4 +1,9 @@
-import { AuditFinding, FindingCategory, NemesisConfig, ScannerSummary } from "../types.ts";
+import type {
+  AuditFinding,
+  FindingCategory,
+  NemesisConfig,
+  ScannerSummary,
+} from "../types.ts";
 
 export interface ScannerResult {
   summary: ScannerSummary;

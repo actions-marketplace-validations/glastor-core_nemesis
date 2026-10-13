@@ -1,6 +1,6 @@
 import { parseArgs } from "@std/cli";
 import * as core from "@actions/core";
-import { NemesisConfig } from "./types.ts";
+import type { NemesisConfig } from "./types.ts";
 
 function getActionInput(name: string, defaultValue = ""): string {
   try {
@@ -81,12 +81,17 @@ export function loadConfig(cliArgs: string[]): NemesisConfig {
   const isGitHubActions = !!Deno.env.get("GITHUB_ACTIONS");
 
   const scanAll = parsed.all ?? false;
-  const hasSecretsFlag = cliArgs.includes("--secrets") || cliArgs.includes("--no-secrets");
-  const hasSastFlag = cliArgs.includes("--sast") || cliArgs.includes("--no-sast");
+  const hasSecretsFlag = cliArgs.includes("--secrets") ||
+    cliArgs.includes("--no-secrets");
+  const hasSastFlag = cliArgs.includes("--sast") ||
+    cliArgs.includes("--no-sast");
   const hasScaFlag = cliArgs.includes("--sca") || cliArgs.includes("--no-sca");
-  const hasHygieneFlag = cliArgs.includes("--hygiene") || cliArgs.includes("--no-hygiene");
-  const hasLicensesFlag = cliArgs.includes("--licenses") || cliArgs.includes("--no-licenses");
-  const anyExplicitModule = hasSecretsFlag || hasSastFlag || hasScaFlag || hasHygieneFlag || hasLicensesFlag;
+  const hasHygieneFlag = cliArgs.includes("--hygiene") ||
+    cliArgs.includes("--no-hygiene");
+  const hasLicensesFlag = cliArgs.includes("--licenses") ||
+    cliArgs.includes("--no-licenses");
+  const anyExplicitModule = hasSecretsFlag || hasSastFlag || hasScaFlag ||
+    hasHygieneFlag || hasLicensesFlag;
   const defaultScan = scanAll || !anyExplicitModule;
 
   const targetPath = isGitHubActions
@@ -171,11 +176,13 @@ export function loadConfig(cliArgs: string[]): NemesisConfig {
     : parsed["trivy-severity"];
 
   const slackWebhookUrl = isGitHubActions
-    ? (getActionInput("slack-webhook-url", "") || Deno.env.get("SLACK_WEBHOOK_URL"))
+    ? (getActionInput("slack-webhook-url", "") ||
+      Deno.env.get("SLACK_WEBHOOK_URL"))
     : (parsed["slack-webhook"] || Deno.env.get("SLACK_WEBHOOK_URL"));
 
   const discordWebhookUrl = isGitHubActions
-    ? (getActionInput("discord-webhook-url", "") || Deno.env.get("DISCORD_WEBHOOK_URL"))
+    ? (getActionInput("discord-webhook-url", "") ||
+      Deno.env.get("DISCORD_WEBHOOK_URL"))
     : (parsed["discord-webhook"] || Deno.env.get("DISCORD_WEBHOOK_URL"));
 
   const autoFix = isGitHubActions

@@ -1,7 +1,8 @@
-import { join } from "@std/path";
+import { basename, join } from "@std/path";
 import { ensureDir } from "@std/fs";
-import { AuditFinding, NemesisConfig, ScannerSummary, Severity } from "../types.ts";
-import { Scanner, ScannerResult } from "./base.ts";
+import { exists } from "@std/fs/exists";
+import type { AuditFinding, NemesisConfig, Severity } from "../types.ts";
+import type { Scanner, ScannerResult } from "./base.ts";
 import { runCommand } from "../utils/exec.ts";
 import { checkTool } from "../utils/tool-checker.ts";
 
@@ -52,17 +53,12 @@ export class LicenseScanner implements Scanner {
     };
 
     if (!tool.available) {
-      return {
-        summary: {
-          tool: this.name,
-          category: this.category,
-          status: "skipped",
-          durationMs: Date.now() - startTime,
-          error: "Trivy binary is required for license and SBOM generation",
-          counts,
-        },
-        findings: [],
-      };
+      if (config.verbose) {
+        console.log(
+          "[LicenseScanner] Trivy no detectado. Activando Nemesis Native License Scanner.",
+        );
+      }
+      return await this.runNativeFallback(config, startTime, counts);
     }
 
     await ensureDir(config.outputDir);
@@ -72,7 +68,7 @@ export class LicenseScanner implements Scanner {
     let cmd = "trivy";
     let args: string[] = [];
 
-    // 1. Run License Scan
+    // 1. Run License Scan via Trivy
     if (tool.useDocker) {
       cmd = "docker";
       args = [
@@ -107,7 +103,10 @@ export class LicenseScanner implements Scanner {
       console.log(`[LicenseScanner] Executing: ${cmd} ${args.join(" ")}`);
     }
 
-    const execResult = await runCommand(cmd, args, { cwd: Deno.cwd(), timeoutMs: 300_000 });
+    const execResult = await runCommand(cmd, args, {
+      cwd: Deno.cwd(),
+      timeoutMs: 300_000,
+    });
 
     // 2. Run SBOM Generation if enabled
     if (config.generateSbom) {
@@ -137,7 +136,9 @@ export class LicenseScanner implements Scanner {
         ];
       }
       if (config.verbose) {
-        console.log(`[SBOM] Generating CycloneDX SBOM: ${cmd} ${sbomArgs.join(" ")}`);
+        console.log(
+          `[SBOM] Generating CycloneDX SBOM: ${cmd} ${sbomArgs.join(" ")}`,
+        );
       }
       await runCommand(cmd, sbomArgs, { cwd: Deno.cwd(), timeoutMs: 300_000 });
     }
@@ -168,7 +169,9 @@ export class LicenseScanner implements Scanner {
               category: this.category,
               severity: "HIGH",
               title: `Licencia Copyleft Restrictiva: ${licName}`,
-              description: `El paquete "${lic.PkgName ?? "N/A"}" utiliza una licencia copyleft (${licName}). En software comercial cerrado, esto puede requerir la liberación del código fuente derivado.`,
+              description: `El paquete "${
+                lic.PkgName ?? "N/A"
+              }" utiliza una licencia copyleft (${licName}). En software comercial cerrado, esto puede requerir la liberación del código fuente derivado.`,
               file: lic.FilePath || target.Target,
               package: lic.PkgName,
               license: licName,
@@ -180,17 +183,8 @@ export class LicenseScanner implements Scanner {
       }
     } catch {
       if (execResult.code !== 0 && execResult.code !== 1) {
-        return {
-          summary: {
-            tool: this.name,
-            category: this.category,
-            status: "failed",
-            durationMs,
-            error: execResult.stderr || execResult.stdout || `Exit code ${execResult.code}`,
-            counts,
-          },
-          findings: [],
-        };
+        // Fall back to native scanner
+        return await this.runNativeFallback(config, startTime, counts);
       }
     }
 
@@ -204,5 +198,266 @@ export class LicenseScanner implements Scanner {
       },
       findings,
     };
+  }
+
+  /**
+   * Native manifest and license scanner when Trivy is not installed
+   */
+  private async runNativeFallback(
+    config: NemesisConfig,
+    startTime: number,
+    counts: Record<Severity, number>,
+  ): Promise<ScannerResult> {
+    const findings: AuditFinding[] = [];
+    const targetDir = config.targetPath;
+    let counter = 1;
+    const components: Array<
+      { name: string; version: string; license?: string }
+    > = [];
+
+    try {
+      // 1. Inspect Root LICENSE File
+      const licenseFiles = ["LICENSE", "LICENSE.md", "LICENSE.txt", "LICENCE"];
+      let rootLicenseType = "Unknown";
+      let hasRootLicense = false;
+
+      for (const lf of licenseFiles) {
+        const lfPath = join(targetDir, lf);
+        if (await exists(lfPath)) {
+          hasRootLicense = true;
+          try {
+            const content = await Deno.readTextFile(lfPath);
+            rootLicenseType = this.detectLicenseFromText(content);
+          } catch {
+            // Ignore
+          }
+          break;
+        }
+      }
+
+      if (!hasRootLicense && config.requireLicense) {
+        counts.LOW++;
+        findings.push({
+          id: `LICENSE-NATIVE-${counter++}`,
+          tool: `${this.name} (native)`,
+          category: this.category,
+          severity: "LOW",
+          title: "Falta archivo LICENSE en la raíz del repositorio",
+          description:
+            "No se encontró ningún archivo LICENSE o LICENSE.md que declare los términos de uso del software.",
+          file: "LICENSE",
+          ruleId: "license-missing-file",
+        });
+      }
+
+      // 2. Inspect Manifests: deno.json, package.json, Cargo.toml
+      // deno.json
+      const denoJsonPath = join(targetDir, "deno.json");
+      if (await exists(denoJsonPath)) {
+        try {
+          const content = JSON.parse(await Deno.readTextFile(denoJsonPath));
+          const lic = content.license;
+          components.push({
+            name: content.name ?? "deno-project",
+            version: content.version ?? "1.0.0",
+            license: lic ?? rootLicenseType,
+          });
+
+          if (lic && this.isCopyleft(lic)) {
+            counts.HIGH++;
+            findings.push({
+              id: `LICENSE-NATIVE-${counter++}`,
+              tool: `${this.name} (native)`,
+              category: this.category,
+              severity: "HIGH",
+              title: `Licencia Copyleft declarada en deno.json: ${lic}`,
+              description: `deno.json declara una licencia copyleft (${lic}).`,
+              file: "deno.json",
+              license: lic,
+              ruleId: "license-copyleft-risk",
+            });
+          }
+        } catch {
+          // Ignore parse errors
+        }
+      }
+
+      // package.json
+      const pkgJsonPath = join(targetDir, "package.json");
+      if (await exists(pkgJsonPath)) {
+        try {
+          const content = JSON.parse(await Deno.readTextFile(pkgJsonPath));
+          const lic = content.license;
+          components.push({
+            name: content.name ?? "npm-project",
+            version: content.version ?? "1.0.0",
+            license: lic ?? rootLicenseType,
+          });
+
+          if (lic && this.isCopyleft(lic)) {
+            counts.HIGH++;
+            findings.push({
+              id: `LICENSE-NATIVE-${counter++}`,
+              tool: `${this.name} (native)`,
+              category: this.category,
+              severity: "HIGH",
+              title: `Licencia Copyleft declarada en package.json: ${lic}`,
+              description:
+                `package.json declara una licencia copyleft (${lic}).`,
+              file: "package.json",
+              license: lic,
+              ruleId: "license-copyleft-risk",
+            });
+          }
+        } catch {
+          // Ignore
+        }
+      }
+
+      // Cargo.toml
+      const cargoTomlPath = join(targetDir, "Cargo.toml");
+      if (await exists(cargoTomlPath)) {
+        try {
+          const content = await Deno.readTextFile(cargoTomlPath);
+          const licMatch = /license\s*=\s*["']([^"']+)["']/.exec(content);
+          if (licMatch) {
+            const lic = licMatch[1];
+            components.push({
+              name: "cargo-project",
+              version: "1.0.0",
+              license: lic,
+            });
+            if (this.isCopyleft(lic)) {
+              counts.HIGH++;
+              findings.push({
+                id: `LICENSE-NATIVE-${counter++}`,
+                tool: `${this.name} (native)`,
+                category: this.category,
+                severity: "HIGH",
+                title: `Licencia Copyleft declarada en Cargo.toml: ${lic}`,
+                description:
+                  `Cargo.toml declara una licencia copyleft (${lic}).`,
+                file: "Cargo.toml",
+                license: lic,
+                ruleId: "license-copyleft-risk",
+              });
+            }
+          }
+        } catch {
+          // Ignore
+        }
+      }
+
+      // 3. Generate Native SBOM CycloneDX if requested
+      if (config.generateSbom) {
+        await ensureDir(config.outputDir);
+        const sbomPath = join(config.outputDir, "sbom.cyclonedx.json");
+        const sbom = {
+          bomFormat: "CycloneDX",
+          specVersion: "1.5",
+          serialNumber: `urn:uuid:${crypto.randomUUID()}`,
+          version: 1,
+          metadata: {
+            timestamp: new Date().toISOString(),
+            tools: [
+              {
+                vendor: "GLASTOR-DEV",
+                name: "Nemesis Native SBOM Generator",
+                version: "1.1.0",
+              },
+            ],
+            component: {
+              type: "application",
+              name: basename(Deno.cwd()),
+              version: "1.1.0",
+              licenses: [{
+                license: {
+                  id: rootLicenseType !== "Unknown" ? rootLicenseType : "MIT",
+                },
+              }],
+            },
+          },
+          components: components.map((c) => ({
+            type: "library",
+            name: c.name,
+            version: c.version,
+            licenses: c.license ? [{ license: { id: c.license } }] : undefined,
+          })),
+        };
+        await Deno.writeTextFile(sbomPath, JSON.stringify(sbom, null, 2));
+      }
+    } catch (err) {
+      return {
+        summary: {
+          tool: `${this.name} (native)`,
+          category: this.category,
+          status: "failed",
+          durationMs: Date.now() - startTime,
+          error: err instanceof Error ? err.message : String(err),
+          counts,
+        },
+        findings,
+      };
+    }
+
+    return {
+      summary: {
+        tool: `${this.name} (native)`,
+        category: this.category,
+        status: "success",
+        durationMs: Date.now() - startTime,
+        counts,
+      },
+      findings,
+    };
+  }
+
+  private isCopyleft(licenseStr: string): boolean {
+    return this.copyleftLicenses.some((cl) =>
+      licenseStr.toUpperCase().includes(cl.toUpperCase())
+    );
+  }
+
+  private detectLicenseFromText(text: string): string {
+    const upper = text.toUpperCase();
+    if (
+      upper.includes("MIT LICENSE") ||
+      upper.includes("PERMISSION IS HEREBY GRANTED, FREE OF CHARGE")
+    ) {
+      return "MIT";
+    }
+    if (upper.includes("APACHE LICENSE") && upper.includes("VERSION 2.0")) {
+      return "Apache-2.0";
+    }
+    if (upper.includes("GNU AFFERO GENERAL PUBLIC LICENSE")) {
+      return "AGPL-3.0";
+    }
+    if (
+      upper.includes("GNU GENERAL PUBLIC LICENSE") &&
+      upper.includes("VERSION 3")
+    ) {
+      return "GPL-3.0";
+    }
+    if (
+      upper.includes("GNU GENERAL PUBLIC LICENSE") &&
+      upper.includes("VERSION 2")
+    ) {
+      return "GPL-2.0";
+    }
+    if (
+      upper.includes("BSD 3-CLAUSE") || upper.includes("NEITHER THE NAME OF")
+    ) {
+      return "BSD-3-Clause";
+    }
+    if (upper.includes("BSD 2-CLAUSE")) {
+      return "BSD-2-Clause";
+    }
+    if (upper.includes("MOZILLA PUBLIC LICENSE")) {
+      return "MPL-2.0";
+    }
+    if (upper.includes("ISC LICENSE")) {
+      return "ISC";
+    }
+    return "Custom/Proprietary";
   }
 }

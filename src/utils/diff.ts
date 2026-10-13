@@ -5,9 +5,13 @@ export async function getChangedFiles(
   baseRef = "origin/main",
 ): Promise<string[] | null> {
   // Check if target is a git repository
-  const isGit = await runCommand("git", ["rev-parse", "--is-inside-work-tree"], {
-    cwd: targetDir,
-  });
+  const isGit = await runCommand(
+    "git",
+    ["rev-parse", "--is-inside-work-tree"],
+    {
+      cwd: targetDir,
+    },
+  );
   if (!isGit.success) {
     return null;
   }
@@ -17,7 +21,11 @@ export async function getChangedFiles(
   const compareRef = prBase ? `origin/${prBase}` : baseRef;
 
   // Try git diff with compareRef
-  let diffRes = await runCommand("git", ["diff", "--name-only", `${compareRef}...HEAD`], {
+  let diffRes = await runCommand("git", [
+    "diff",
+    "--name-only",
+    `${compareRef}...HEAD`,
+  ], {
     cwd: targetDir,
   });
 

@@ -1,8 +1,19 @@
-import { bold, cyan, green, red, yellow, gray, magenta, blue } from "@std/fmt/colors";
-import { AuditReport, Severity } from "../types.ts";
+import {
+  blue,
+  bold,
+  cyan,
+  gray,
+  green,
+  magenta,
+  red,
+  yellow,
+} from "@std/fmt/colors";
+import type { AuditReport } from "../types.ts";
 
 export function printConsoleReport(report: AuditReport): void {
-  console.log("\n" + cyan(bold("==================================================")));
+  console.log(
+    "\n" + cyan(bold("==================================================")),
+  );
   console.log(cyan(bold("        N E M E S I S   S E C U R I T Y           ")));
   console.log(cyan(bold("==================================================")));
   console.log(gray(`Timestamp: ${report.timestamp}`));
@@ -17,7 +28,9 @@ export function printConsoleReport(report: AuditReport): void {
       : red("✖ FAILED");
 
     console.log(
-      `  • ${bold(s.tool.toUpperCase().padEnd(10))} [${statusText}] (${s.durationMs}ms)` +
+      `  • ${
+        bold(s.tool.toUpperCase().padEnd(10))
+      } [${statusText}] (${s.durationMs}ms)` +
         (s.error ? gray(` - ${s.error}`) : ""),
     );
   }
@@ -42,23 +55,49 @@ export function printConsoleReport(report: AuditReport): void {
         ? yellow
         : blue;
 
-      const location = f.file ? gray(` (${f.file}${f.line ? `:${f.line}` : ""})`) : "";
-      console.log(`  [${sevColor(f.severity)}] [${f.category}] ${bold(f.title)}${location}`);
+      const location = f.file
+        ? gray(` (${f.file}${f.line ? `:${f.line}` : ""})`)
+        : "";
+      console.log(
+        `  [${sevColor(f.severity)}] [${f.category}] ${
+          bold(f.title)
+        }${location}`,
+      );
       if (f.cve || f.package) {
-        console.log(`    ${gray(`Pkg: ${f.package ?? "N/A"} | Fix: ${f.fixedVersion ?? "N/A"} | CVE: ${f.cve ?? "N/A"}`)}`);
+        console.log(
+          `    ${
+            gray(
+              `Pkg: ${f.package ?? "N/A"} | Fix: ${
+                f.fixedVersion ?? "N/A"
+              } | CVE: ${f.cve ?? "N/A"}`,
+            )
+          }`,
+        );
       }
     }
     if (report.findings.length > 10) {
-      console.log(gray(`  ... and ${report.findings.length - 10} more findings (see report file)`));
+      console.log(
+        gray(
+          `  ... and ${
+            report.findings.length - 10
+          } more findings (see report file)`,
+        ),
+      );
     }
     console.log();
   }
 
   console.log(cyan(bold("==================================================")));
   if (report.passed) {
-    console.log(green(bold("✔ AUDIT PASSED - No threshold-violating vulnerabilities found")));
+    console.log(
+      green(
+        bold("✔ AUDIT PASSED - No threshold-violating vulnerabilities found"),
+      ),
+    );
   } else {
     console.log(red(bold(`✖ AUDIT FAILED - ${report.failureReason}`)));
   }
-  console.log(cyan(bold("==================================================\n")));
+  console.log(
+    cyan(bold("==================================================\n")),
+  );
 }

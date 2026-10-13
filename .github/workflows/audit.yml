@@ -4,94 +4,94 @@ on:
   workflow_call:
     inputs:
       target-path:
-        description: 'Directory to audit'
+        description: "Directory to audit"
         required: false
-        default: '.'
+        default: "."
         type: string
       fail-on-critical:
-        description: 'Fail pipeline on CRITICAL vulnerabilities'
+        description: "Fail pipeline on CRITICAL vulnerabilities"
         required: false
         default: false
         type: boolean
       fail-on-high:
-        description: 'Fail pipeline on HIGH or CRITICAL vulnerabilities'
+        description: "Fail pipeline on HIGH or CRITICAL vulnerabilities"
         required: false
         default: false
         type: boolean
       scan-secrets:
-        description: 'Run secret scanning (Gitleaks)'
+        description: "Run secret scanning (Gitleaks)"
         required: false
         default: true
         type: boolean
       scan-sast:
-        description: 'Run SAST code scanning (Semgrep)'
+        description: "Run SAST code scanning (Semgrep)"
         required: false
         default: true
         type: boolean
       scan-sca:
-        description: 'Run SCA dependency scanning (Trivy)'
+        description: "Run SCA dependency scanning (Trivy)"
         required: false
         default: true
         type: boolean
       scan-hygiene:
-        description: 'Run repository hygiene and junk cleanup checks'
+        description: "Run repository hygiene and junk cleanup checks"
         required: false
         default: true
         type: boolean
       scan-licenses:
-        description: 'Run license compliance scanning'
+        description: "Run license compliance scanning"
         required: false
         default: true
         type: boolean
       generate-sbom:
-        description: 'Generate CycloneDX SBOM report'
+        description: "Generate CycloneDX SBOM report"
         required: false
         default: true
         type: boolean
       diff-mode:
-        description: 'Only scan files modified in current PR'
+        description: "Only scan files modified in current PR"
         required: false
         default: false
         type: boolean
       auto-fix:
-        description: 'Automatically remove toxic files and commit cleanups'
+        description: "Automatically remove toxic files and commit cleanups"
         required: false
         default: false
         type: boolean
       pr-suggestions:
-        description: 'Generate 1-click interactive GitHub PR Review Suggestions'
+        description: "Generate 1-click interactive GitHub PR Review Suggestions"
         required: false
         default: true
         type: boolean
       max-file-size-mb:
-        description: 'Max allowed file size in MB'
+        description: "Max allowed file size in MB"
         required: false
-        default: '10'
+        default: "10"
         type: string
       post-pr-comment:
-        description: 'Post PR comment with summary'
+        description: "Post PR comment with summary"
         required: false
         default: true
         type: boolean
       slack-webhook-url:
-        description: 'Slack Webhook URL for notifications'
+        description: "Slack Webhook URL for notifications"
         required: false
-        default: ''
+        default: ""
         type: string
       discord-webhook-url:
-        description: 'Discord Webhook URL for notifications'
+        description: "Discord Webhook URL for notifications"
         required: false
-        default: ''
+        default: ""
         type: string
     secrets:
       token:
-        description: 'GitHub token for PR commenting and SARIF upload'
+        description: "GitHub token for PR commenting and SARIF upload"
         required: false
 
 permissions:
-  contents: write            # Permite auto-commits de limpieza
-  pull-requests: write       # Permite PR comments y 1-click review suggestions
-  security-events: write     # Permite carga de alertas SARIF
+  contents: write # Permite auto-commits de limpieza
+  pull-requests: write # Permite PR comments y 1-click review suggestions
+  security-events: write # Permite carga de alertas SARIF
   issues: write
 
 jobs:
@@ -124,4 +124,4 @@ jobs:
           slack-webhook-url: ${{ inputs.slack-webhook-url }}
           discord-webhook-url: ${{ inputs.discord-webhook-url }}
           github-token: ${{ secrets.token || secrets.GITHUB_TOKEN }}
-          upload-sarif: 'true'
+          upload-sarif: "true"

@@ -1,4 +1,4 @@
-import { AuditReport } from "../types.ts";
+import type { AuditReport } from "../types.ts";
 
 export async function sendWebhookNotification(
   report: AuditReport,
@@ -13,13 +13,16 @@ export async function sendWebhookNotification(
   const repo = report.repository || "Repository";
   const statusEmoji = report.passed ? "✅" : "🚨";
   const statusText = report.passed ? "AUDIT PASSED" : "AUDIT FAILED";
-  const commitShort = report.commitSha ? report.commitSha.substring(0, 7) : "N/A";
+  const commitShort = report.commitSha
+    ? report.commitSha.substring(0, 7)
+    : "N/A";
 
   // 1. Slack Notification
   if (slackWebhookUrl) {
     try {
       const payload = {
-        text: `${statusEmoji} *Nemesis Security Audit - ${statusText}* on \`${repo}\``,
+        text:
+          `${statusEmoji} *Nemesis Security Audit - ${statusText}* on \`${repo}\``,
         blocks: [
           {
             type: "header",
@@ -33,10 +36,16 @@ export async function sendWebhookNotification(
             fields: [
               { type: "mrkdwn", text: `*Repository:*\n${repo}` },
               { type: "mrkdwn", text: `*Commit:*\n\`${commitShort}\`` },
-              { type: "mrkdwn", text: `*Critical:*\n${report.counts.CRITICAL}` },
+              {
+                type: "mrkdwn",
+                text: `*Critical:*\n${report.counts.CRITICAL}`,
+              },
               { type: "mrkdwn", text: `*High:*\n${report.counts.HIGH}` },
               { type: "mrkdwn", text: `*Medium:*\n${report.counts.MEDIUM}` },
-              { type: "mrkdwn", text: `*Total Findings:*\n${report.totalFindings}` },
+              {
+                type: "mrkdwn",
+                text: `*Total Findings:*\n${report.totalFindings}`,
+              },
             ],
           },
         ],
@@ -61,14 +70,31 @@ export async function sendWebhookNotification(
         embeds: [
           {
             title: `${statusEmoji} Nemesis Security Audit: ${statusText}`,
-            description: `Audit result for **${repo}** at commit \`${commitShort}\``,
+            description:
+              `Audit result for **${repo}** at commit \`${commitShort}\``,
             color,
             fields: [
-              { name: "Critical", value: `${report.counts.CRITICAL}`, inline: true },
+              {
+                name: "Critical",
+                value: `${report.counts.CRITICAL}`,
+                inline: true,
+              },
               { name: "High", value: `${report.counts.HIGH}`, inline: true },
-              { name: "Medium", value: `${report.counts.MEDIUM}`, inline: true },
-              { name: "Total Findings", value: `${report.totalFindings}`, inline: true },
-              { name: "Ignored / Excluded", value: `${report.ignoredFindings.length}`, inline: true },
+              {
+                name: "Medium",
+                value: `${report.counts.MEDIUM}`,
+                inline: true,
+              },
+              {
+                name: "Total Findings",
+                value: `${report.totalFindings}`,
+                inline: true,
+              },
+              {
+                name: "Ignored / Excluded",
+                value: `${report.ignoredFindings.length}`,
+                inline: true,
+              },
             ],
             timestamp: report.timestamp,
             footer: { text: "Nemesis Security Auditor" },

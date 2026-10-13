@@ -1,7 +1,11 @@
 import { join } from "@std/path";
 import { ensureDir } from "@std/fs";
-import { AuditFinding, NemesisConfig, ScannerSummary, Severity } from "../types.ts";
-import { Scanner, ScannerResult } from "./base.ts";
+import type {
+  AuditFinding,
+  NemesisConfig,
+  Severity,
+} from "../types.ts";
+import type { Scanner, ScannerResult } from "./base.ts";
 import { runCommand } from "../utils/exec.ts";
 import { checkTool } from "../utils/tool-checker.ts";
 
@@ -121,7 +125,10 @@ export class TrivyScanner implements Scanner {
       console.log(`[Trivy] Executing: ${cmd} ${args.join(" ")}`);
     }
 
-    const execResult = await runCommand(cmd, args, { cwd: Deno.cwd(), timeoutMs: 600_000 });
+    const execResult = await runCommand(cmd, args, {
+      cwd: Deno.cwd(),
+      timeoutMs: 600_000,
+    });
     const durationMs = Date.now() - startTime;
 
     const findings: AuditFinding[] = [];
@@ -145,7 +152,8 @@ export class TrivyScanner implements Scanner {
               category: "SCA",
               severity,
               title: `${vuln.PkgName} (${vuln.VulnerabilityID})`,
-              description: vuln.Title || vuln.Description || "Vulnerability in dependency",
+              description: vuln.Title || vuln.Description ||
+                "Vulnerability in dependency",
               file: target.Target,
               package: vuln.PkgName,
               installedVersion: vuln.InstalledVersion,
@@ -169,7 +177,8 @@ export class TrivyScanner implements Scanner {
               category: "MISCONFIG",
               severity,
               title: mis.Title || mis.ID,
-              description: mis.Message || mis.Description || "Configuration security issue",
+              description: mis.Message || mis.Description ||
+                "Configuration security issue",
               file: target.Target,
               ruleId: mis.ID,
               raw: mis,
@@ -185,7 +194,8 @@ export class TrivyScanner implements Scanner {
             category: this.category,
             status: "failed",
             durationMs,
-            error: execResult.stderr || execResult.stdout || `Exit code ${execResult.code}`,
+            error: execResult.stderr || execResult.stdout ||
+              `Exit code ${execResult.code}`,
             counts,
           },
           findings: [],

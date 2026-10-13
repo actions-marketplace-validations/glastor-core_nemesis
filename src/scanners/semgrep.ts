@@ -1,7 +1,11 @@
 import { join } from "@std/path";
 import { ensureDir } from "@std/fs";
-import { AuditFinding, NemesisConfig, ScannerSummary, Severity } from "../types.ts";
-import { Scanner, ScannerResult } from "./base.ts";
+import type {
+  AuditFinding,
+  NemesisConfig,
+  Severity,
+} from "../types.ts";
+import type { Scanner, ScannerResult } from "./base.ts";
 import { runCommand } from "../utils/exec.ts";
 import { checkTool } from "../utils/tool-checker.ts";
 
@@ -104,7 +108,10 @@ export class SemgrepScanner implements Scanner {
       console.log(`[Semgrep] Executing: ${cmd} ${args.join(" ")}`);
     }
 
-    const execResult = await runCommand(cmd, args, { cwd: Deno.cwd(), timeoutMs: 600_000 });
+    const execResult = await runCommand(cmd, args, {
+      cwd: Deno.cwd(),
+      timeoutMs: 600_000,
+    });
     const durationMs = Date.now() - startTime;
 
     const findings: AuditFinding[] = [];
@@ -142,7 +149,8 @@ export class SemgrepScanner implements Scanner {
             category: this.category,
             status: "failed",
             durationMs,
-            error: execResult.stderr || execResult.stdout || `Exit code ${execResult.code}`,
+            error: execResult.stderr || execResult.stdout ||
+              `Exit code ${execResult.code}`,
             counts,
           },
           findings: [],

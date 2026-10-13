@@ -1,6 +1,6 @@
 import { join } from "@std/path";
 import { exists } from "@std/fs/exists";
-import { AuditFinding, AuditReport, NemesisConfig } from "../types.ts";
+import type { AuditFinding, AuditReport, NemesisConfig } from "../types.ts";
 import { runCommand } from "../utils/exec.ts";
 
 export interface AutoFixResult {
@@ -23,7 +23,10 @@ export async function applyAutoFix(
   const targetDir = config.targetPath;
 
   // 1. Check if git is available
-  const gitCheck = await runCommand("git", ["rev-parse", "--is-inside-work-tree"], {
+  const gitCheck = await runCommand("git", [
+    "rev-parse",
+    "--is-inside-work-tree",
+  ], {
     cwd: targetDir,
   });
   const isGit = gitCheck.success;
@@ -41,7 +44,7 @@ export async function applyAutoFix(
   );
 
   const gitignorePath = join(targetDir, ".gitignore");
-  let gitignoreContent = (await exists(gitignorePath))
+  const gitignoreContent = (await exists(gitignorePath))
     ? await Deno.readTextFile(gitignorePath)
     : "";
 
@@ -70,11 +73,16 @@ export async function applyAutoFix(
         result.fixedCount++;
 
         if (isGit) {
-          await runCommand("git", ["rm", "-f", "--cached", item.file], { cwd: targetDir });
+          await runCommand("git", ["rm", "-f", "--cached", item.file], {
+            cwd: targetDir,
+          });
         }
       }
     } catch (err) {
-      console.warn(`[Nemesis Auto-Fix] Error eliminando archivo ${item.file}:`, err);
+      console.warn(
+        `[Nemesis Auto-Fix] Error eliminando archivo ${item.file}:`,
+        err,
+      );
     }
   }
 
@@ -91,7 +99,9 @@ export async function applyAutoFix(
   }
 
   if (rulesToAdd.length > 0) {
-    const header = gitignoreContent ? "\n# Nemesis Hygiene Auto-Clean\n" : "# Nemesis Hygiene .gitignore\n";
+    const header = gitignoreContent
+      ? "\n# Nemesis Hygiene Auto-Clean\n"
+      : "# Nemesis Hygiene .gitignore\n";
     const newContent = gitignoreContent + header + rulesToAdd.join("\n") + "\n";
     await Deno.writeTextFile(gitignorePath, newContent);
     result.gitignoreUpdated = true;
@@ -102,37 +112,68 @@ export async function applyAutoFix(
   if (isGit && (result.filesRemoved.length > 0 || result.gitignoreUpdated)) {
     try {
       await runCommand("git", ["add", "-A"], { cwd: targetDir });
-      const statusRes = await runCommand("git", ["status", "--porcelain"], { cwd: targetDir });
+      const statusRes = await runCommand("git", ["status", "--porcelain"], {
+        cwd: targetDir,
+      });
 
       if (statusRes.stdout.trim() !== "") {
-        console.log("[Nemesis Auto-Fix] Realizando commit automático de limpieza...");
+        console.log(
+          "[Nemesis Auto-Fix] Realizando commit automático de limpieza...",
+        );
 
         // Ensure git author identity
-        await runCommand("git", ["config", "user.name", "Nemesis Bot"], { cwd: targetDir });
-        await runCommand("git", ["config", "user.email", "bot@nemesis.security"], { cwd: targetDir });
+        await runCommand("git", ["config", "user.name", "Nemesis Bot"], {
+          cwd: targetDir,
+        });
+        await runCommand("git", [
+          "config",
+          "user.email",
+          "bot@nemesis.security",
+        ], { cwd: targetDir });
 
-        const commitMessage = "chore(nemesis): auto-clean toxic files and update .gitignore [skip ci]";
-        const commitRes = await runCommand("git", ["commit", "-m", commitMessage], { cwd: targetDir });
+        const commitMessage =
+          "chore(nemesis): auto-clean toxic files and update .gitignore [skip ci]";
+        const commitRes = await runCommand("git", [
+          "commit",
+          "-m",
+          commitMessage,
+        ], { cwd: targetDir });
 
         if (commitRes.success) {
-          const shaRes = await runCommand("git", ["rev-parse", "--short", "HEAD"], { cwd: targetDir });
+          const shaRes = await runCommand("git", [
+            "rev-parse",
+            "--short",
+            "HEAD",
+          ], { cwd: targetDir });
           result.commitSha = shaRes.stdout.trim();
           console.log(`[Nemesis Auto-Fix] Commit creado: ${result.commitSha}`);
 
           // Push if in GitHub Actions environment
           if (Deno.env.get("GITHUB_ACTIONS")) {
-            console.log("[Nemesis Auto-Fix] Subiendo commit de limpieza a la rama remota...");
-            const pushRes = await runCommand("git", ["push"], { cwd: targetDir });
+            console.log(
+              "[Nemesis Auto-Fix] Subiendo commit de limpieza a la rama remota...",
+            );
+            const pushRes = await runCommand("git", ["push"], {
+              cwd: targetDir,
+            });
             if (!pushRes.success) {
-              console.warn("[Nemesis Auto-Fix] Push automático falló (verificar permisos contents: write):", pushRes.stderr);
+              console.warn(
+                "[Nemesis Auto-Fix] Push automático falló (verificar permisos contents: write):",
+                pushRes.stderr,
+              );
             } else {
-              console.log("[Nemesis Auto-Fix] ✔ Cambios de limpieza subidos a GitHub exitosamente.");
+              console.log(
+                "[Nemesis Auto-Fix] ✔ Cambios de limpieza subidos a GitHub exitosamente.",
+              );
             }
           }
         }
       }
     } catch (err) {
-      console.warn("[Nemesis Auto-Fix] Error creando commit de auto-remediación:", err);
+      console.warn(
+        "[Nemesis Auto-Fix] Error creando commit de auto-remediación:",
+        err,
+      );
     }
   }
 

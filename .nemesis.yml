@@ -3,11 +3,9 @@ version: "1"
 
 # Reglas de exclusión y justificación de falsos positivos
 # Toda exclusión requiere obligatoriamente una razón ('reason')
-ignore: []
-  # - id: "SAST-1"
-  #   path: "tests/fixtures/**"
-  #   reason: "Datos de prueba simulados en ambiente mock"
-  #   expires: "2026-12-31"
+ignore:
+  - path: "tests/"
+    reason: "Secretos ficticios y archivos de prueba para la suite automatizada de tests"
 
 settings:
   maxFileSizeMb: 10

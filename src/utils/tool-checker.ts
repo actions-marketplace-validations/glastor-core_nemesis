@@ -7,7 +7,10 @@ export interface ToolStatus {
   useDocker?: boolean;
 }
 
-export async function checkTool(name: string, versionFlag = "--version"): Promise<ToolStatus> {
+export async function checkTool(
+  name: string,
+  versionFlag = "--version",
+): Promise<ToolStatus> {
   const result = await runCommand(name, [versionFlag], { timeoutMs: 10_000 });
   if (result.code === 0) {
     const firstLine = (result.stdout || result.stderr).trim().split("\n")[0];
@@ -20,7 +23,9 @@ export async function checkTool(name: string, versionFlag = "--version"): Promis
   }
 
   // Check if Docker is available as fallback
-  const dockerCheck = await runCommand("docker", ["--version"], { timeoutMs: 5_000 });
+  const dockerCheck = await runCommand("docker", ["--version"], {
+    timeoutMs: 5_000,
+  });
   if (dockerCheck.code === 0) {
     return {
       name,

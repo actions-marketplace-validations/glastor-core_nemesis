@@ -1,5 +1,5 @@
 import * as core from "@actions/core";
-import { AuditFinding } from "../types.ts";
+import type { AuditFinding } from "../types.ts";
 
 export function createWorkflowAnnotations(findings: AuditFinding[]): void {
   for (const f of findings) {

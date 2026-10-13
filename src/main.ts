@@ -2,14 +2,22 @@ import { join } from "@std/path";
 import { ensureDir } from "@std/fs";
 import * as core from "@actions/core";
 import { loadConfig, showHelp } from "./config.ts";
-import { loadNemesisFileConfig, filterIgnoredFindings } from "./config/schema.ts";
-import { AuditFinding, AuditReport, ScannerSummary, Severity } from "./types.ts";
+import {
+  filterIgnoredFindings,
+  loadNemesisFileConfig,
+} from "./config/schema.ts";
+import type {
+  AuditFinding,
+  AuditReport,
+  ScannerSummary,
+  Severity,
+} from "./types.ts";
 import { GitleaksScanner } from "./scanners/gitleaks.ts";
 import { SemgrepScanner } from "./scanners/semgrep.ts";
 import { TrivyScanner } from "./scanners/trivy.ts";
 import { HygieneScanner } from "./scanners/hygiene.ts";
 import { LicenseScanner } from "./scanners/license.ts";
-import { Scanner } from "./scanners/base.ts";
+import type { Scanner } from "./scanners/base.ts";
 import { printConsoleReport } from "./reporters/console.ts";
 import { generateMarkdownReport } from "./reporters/markdown.ts";
 import { generateSarifReport } from "./reporters/sarif.ts";
@@ -30,22 +38,36 @@ async function main() {
   await ensureDir(config.outputDir);
 
   // 1. Load suppression & project config (.nemesis.yml)
-  const fileConfig = await loadNemesisFileConfig(config.targetPath, config.configFile);
+  const fileConfig = await loadNemesisFileConfig(
+    config.targetPath,
+    config.configFile,
+  );
   if (fileConfig && config.verbose) {
-    console.log(`[Nemesis] Loaded config file with ${fileConfig.ignore.length} ignore rules.`);
+    console.log(
+      `[Nemesis] Loaded config file with ${fileConfig.ignore.length} ignore rules.`,
+    );
   }
 
   // 2. Differential Scanning Check
   if (config.diffMode) {
-    const changed = await getChangedFiles(config.targetPath, config.diffBaseRef);
+    const changed = await getChangedFiles(
+      config.targetPath,
+      config.diffBaseRef,
+    );
     if (changed !== null) {
       config.changedFiles = changed;
-      console.log(`[Nemesis] ⚡ Differential Scan Active: ${changed.length} modified files detected.`);
+      console.log(
+        `[Nemesis] ⚡ Differential Scan Active: ${changed.length} modified files detected.`,
+      );
       if (changed.length === 0) {
-        console.log("[Nemesis] No modified files detected in diff. Audit complete.");
+        console.log(
+          "[Nemesis] No modified files detected in diff. Audit complete.",
+        );
       }
     } else {
-      console.log("[Nemesis] Differential scan unavailable (not a git repo or compare ref missing). Falling back to full scan.");
+      console.log(
+        "[Nemesis] Differential scan unavailable (not a git repo or compare ref missing). Falling back to full scan.",
+      );
     }
   }
 
@@ -69,12 +91,16 @@ async function main() {
   }
 
   if (scanners.length === 0) {
-    console.error("No scanners enabled. Use --secrets, --sast, --sca, --hygiene, --licenses or --all.");
+    console.error(
+      "No scanners enabled. Use --secrets, --sast, --sca, --hygiene, --licenses or --all.",
+    );
     Deno.exit(1);
   }
 
   console.log(`[Nemesis] Starting audit on: ${config.targetPath}`);
-  console.log(`[Nemesis] Enabled modules: ${scanners.map((s) => s.name).join(", ")}`);
+  console.log(
+    `[Nemesis] Enabled modules: ${scanners.map((s) => s.name).join(", ")}`,
+  );
 
   const scannerSummaries: ScannerSummary[] = [];
   const rawFindings: AuditFinding[] = [];
@@ -102,11 +128,14 @@ async function main() {
   // 4. Filter findings if Differential Mode is enabled
   let filteredFindings = rawFindings;
   if (config.changedFiles && config.changedFiles.length > 0) {
-    const changedSet = new Set(config.changedFiles.map((f) => f.replace(/\\/g, "/")));
+    const changedSet = new Set(
+      config.changedFiles.map((f) => f.replace(/\\/g, "/")),
+    );
     filteredFindings = rawFindings.filter((f) => {
       if (!f.file) return true;
       const normalized = f.file.replace(/\\/g, "/");
-      return changedSet.has(normalized) || Array.from(changedSet).some((cf) => normalized.includes(cf));
+      return changedSet.has(normalized) ||
+        Array.from(changedSet).some((cf) => normalized.includes(cf));
     });
   }
 
@@ -134,13 +163,23 @@ async function main() {
 
   if (config.failOnCritical && totalCounts.CRITICAL > 0) {
     passed = false;
-    failureReason = `Found ${totalCounts.CRITICAL} CRITICAL vulnerabilities (fail-on-critical is enabled).`;
-  } else if (config.failOnHigh && (totalCounts.CRITICAL + totalCounts.HIGH) > 0) {
+    failureReason =
+      `Found ${totalCounts.CRITICAL} CRITICAL vulnerabilities (fail-on-critical is enabled).`;
+  } else if (
+    config.failOnHigh && (totalCounts.CRITICAL + totalCounts.HIGH) > 0
+  ) {
     passed = false;
-    failureReason = `Found ${totalCounts.CRITICAL + totalCounts.HIGH} HIGH/CRITICAL vulnerabilities (fail-on-high is enabled).`;
-  } else if (config.failOnMedium && (totalCounts.CRITICAL + totalCounts.HIGH + totalCounts.MEDIUM) > 0) {
+    failureReason = `Found ${
+      totalCounts.CRITICAL + totalCounts.HIGH
+    } HIGH/CRITICAL vulnerabilities (fail-on-high is enabled).`;
+  } else if (
+    config.failOnMedium &&
+    (totalCounts.CRITICAL + totalCounts.HIGH + totalCounts.MEDIUM) > 0
+  ) {
     passed = false;
-    failureReason = `Found ${totalCounts.CRITICAL + totalCounts.HIGH + totalCounts.MEDIUM} MEDIUM or higher vulnerabilities.`;
+    failureReason = `Found ${
+      totalCounts.CRITICAL + totalCounts.HIGH + totalCounts.MEDIUM
+    } MEDIUM or higher vulnerabilities.`;
   }
 
   // 7. Auto-Fix Remediation (Clean toxic files & commit automatically)
@@ -148,7 +187,9 @@ async function main() {
   let autoFixCommit: string | undefined;
 
   if (config.autoFix) {
-    console.log("[Nemesis] 🤖 Auto-Fix enabled: Applying automatic cleanups...");
+    console.log(
+      "[Nemesis] 🤖 Auto-Fix enabled: Applying automatic cleanups...",
+    );
     const preReport: AuditReport = {
       timestamp: new Date().toISOString(),
       targetPath: config.targetPath,
@@ -249,7 +290,9 @@ async function main() {
     }
 
     if (!passed) {
-      core.setFailed(failureReason ?? "Security audit failed threshold requirements.");
+      core.setFailed(
+        failureReason ?? "Security audit failed threshold requirements.",
+      );
     }
   } else if (!passed) {
     Deno.exit(1);
