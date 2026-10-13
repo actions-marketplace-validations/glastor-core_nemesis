@@ -17,6 +17,8 @@ import { sendWebhookNotification } from "./reporters/webhook.ts";
 import { upsertPrComment } from "./github/pr-commenter.ts";
 import { createWorkflowAnnotations } from "./github/annotator.ts";
 import { getChangedFiles } from "./utils/diff.ts";
+import { applyAutoFix } from "./remediation/auto-fix.ts";
+import { postPullRequestSuggestions } from "./remediation/suggestions.ts";
 
 async function main() {
   if (Deno.args.includes("-h") || Deno.args.includes("--help")) {
@@ -141,6 +143,27 @@ async function main() {
     failureReason = `Found ${totalCounts.CRITICAL + totalCounts.HIGH + totalCounts.MEDIUM} MEDIUM or higher vulnerabilities.`;
   }
 
+  // 7. Auto-Fix Remediation (Clean toxic files & commit automatically)
+  let autoFixedCount = 0;
+  let autoFixCommit: string | undefined;
+
+  if (config.autoFix) {
+    console.log("[Nemesis] 🤖 Auto-Fix enabled: Applying automatic cleanups...");
+    const preReport: AuditReport = {
+      timestamp: new Date().toISOString(),
+      targetPath: config.targetPath,
+      scanners: scannerSummaries,
+      findings: active,
+      ignoredFindings: ignored,
+      totalFindings: active.length,
+      counts: totalCounts,
+      passed,
+    };
+    const fixResult = await applyAutoFix(preReport, config);
+    autoFixedCount = fixResult.fixedCount;
+    autoFixCommit = fixResult.commitSha;
+  }
+
   const sbomReportPath = join(config.outputDir, "sbom.cyclonedx.json");
   const sbomExists = config.generateSbom;
 
@@ -158,9 +181,11 @@ async function main() {
     passed,
     failureReason,
     sbomPath: sbomExists ? sbomReportPath : undefined,
+    autoFixedCount,
+    autoFixCommit,
   };
 
-  // 7. Output Reports
+  // 8. Output Reports
   // Console
   printConsoleReport(report);
 
@@ -178,7 +203,7 @@ async function main() {
   const sarifReportPath = join(config.outputDir, "nemesis-report.sarif");
   await Deno.writeTextFile(sarifReportPath, sarifContent);
 
-  // 8. Dispatch Webhook Notifications (Slack / Discord)
+  // 9. Dispatch Webhook Notifications (Slack / Discord)
   if (config.slackWebhookUrl || config.discordWebhookUrl) {
     await sendWebhookNotification(report, {
       slackWebhookUrl: config.slackWebhookUrl,
@@ -186,7 +211,7 @@ async function main() {
     });
   }
 
-  // 9. GitHub Actions Specific Outputs & PR Integration
+  // 10. GitHub Actions Specific Outputs & PR Remediation
   const isGitHubActions = !!Deno.env.get("GITHUB_ACTIONS");
   if (isGitHubActions) {
     try {
@@ -200,6 +225,7 @@ async function main() {
     core.setOutput("critical-count", String(report.counts.CRITICAL));
     core.setOutput("high-count", String(report.counts.HIGH));
     core.setOutput("ignored-count", String(ignored.length));
+    core.setOutput("auto-fixed-count", String(autoFixedCount));
     core.setOutput("report-json", jsonReportPath);
     core.setOutput("report-md", mdReportPath);
     core.setOutput("report-sarif", sarifReportPath);
@@ -210,6 +236,11 @@ async function main() {
     // Code line annotations on PR diff
     if (config.createAnnotations) {
       createWorkflowAnnotations(report.findings);
+    }
+
+    // Interactive 1-click Pull Request Review Suggestions
+    if (config.prSuggestions && config.githubToken) {
+      await postPullRequestSuggestions(config.githubToken, report);
     }
 
     // PR Comment Upsert

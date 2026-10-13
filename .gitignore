@@ -14,3 +14,13 @@ bin/
 Thumbs.db
 .vscode/
 .idea/
+
+# Nemesis Hygiene Auto-Clean
+desktop.ini
+*.log
+npm-debug.log*
+yarn-error.log*
+*.bak
+*.swp
+.env.local
+.env.*.local

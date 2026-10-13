@@ -48,6 +48,8 @@ export function loadConfig(cliArgs: string[]): NemesisConfig {
       "sbom",
       "diff",
       "require-license",
+      "auto-fix",
+      "pr-suggestions",
       "all",
       "fail-on-critical",
       "fail-on-high",
@@ -176,6 +178,14 @@ export function loadConfig(cliArgs: string[]): NemesisConfig {
     ? (getActionInput("discord-webhook-url", "") || Deno.env.get("DISCORD_WEBHOOK_URL"))
     : (parsed["discord-webhook"] || Deno.env.get("DISCORD_WEBHOOK_URL"));
 
+  const autoFix = isGitHubActions
+    ? getActionBooleanInput("auto-fix", false)
+    : (parsed["auto-fix"] ?? false);
+
+  const prSuggestions = isGitHubActions
+    ? getActionBooleanInput("pr-suggestions", true)
+    : (parsed["pr-suggestions"] ?? true);
+
   const configFile = isGitHubActions
     ? getActionInput("config-file", parsed.config || "")
     : (parsed.config || "");
@@ -190,6 +200,8 @@ export function loadConfig(cliArgs: string[]): NemesisConfig {
     generateSbom,
     diffMode,
     diffBaseRef,
+    autoFix,
+    prSuggestions,
     maxFileSizeMb,
     requireLicense,
     failOnCritical,
@@ -221,6 +233,8 @@ OPTIONS:
   -c, --config <FILE>       Path to .nemesis.yml configuration / suppression file
   -d, --diff                Enable differential scanning (audit only modified files in PR)
       --diff-base <REF>     Base Git ref to compare against (default: "origin/main")
+      --auto-fix            Auto-clean toxic files and commit/push cleanups automatically
+      --pr-suggestions      Generate 1-click GitHub PR Review Suggestions for fixes
       --all                 Enable all scan modules (secrets, sast, sca, hygiene, licenses)
       --secrets             Run secret scanning (Gitleaks)
       --sast                Run static application security testing (Semgrep)

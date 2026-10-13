@@ -53,6 +53,16 @@ on:
         required: false
         default: false
         type: boolean
+      auto-fix:
+        description: 'Automatically remove toxic files and commit cleanups'
+        required: false
+        default: false
+        type: boolean
+      pr-suggestions:
+        description: 'Generate 1-click interactive GitHub PR Review Suggestions'
+        required: false
+        default: true
+        type: boolean
       max-file-size-mb:
         description: 'Max allowed file size in MB'
         required: false
@@ -79,9 +89,9 @@ on:
         required: false
 
 permissions:
-  contents: read
-  pull-requests: write
-  security-events: write
+  contents: write            # Permite auto-commits de limpieza
+  pull-requests: write       # Permite PR comments y 1-click review suggestions
+  security-events: write     # Permite carga de alertas SARIF
   issues: write
 
 jobs:
@@ -107,6 +117,8 @@ jobs:
           scan-licenses: ${{ inputs.scan-licenses }}
           generate-sbom: ${{ inputs.generate-sbom }}
           diff-mode: ${{ inputs.diff-mode }}
+          auto-fix: ${{ inputs.auto-fix }}
+          pr-suggestions: ${{ inputs.pr-suggestions }}
           max-file-size-mb: ${{ inputs.max-file-size-mb }}
           post-pr-comment: ${{ inputs.post-pr-comment }}
           slack-webhook-url: ${{ inputs.slack-webhook-url }}

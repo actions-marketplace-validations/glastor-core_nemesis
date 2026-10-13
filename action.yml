@@ -1,5 +1,5 @@
 name: 'Nemesis Universal Security, Hygiene & Compliance Auditor'
-description: 'Automated DevSecOps security, hygiene, license compliance & SBOM auditor powered by Deno & TypeScript'
+description: 'Automated DevSecOps security, hygiene, license compliance, auto-clean commits & 1-click PR suggestions powered by Deno & TypeScript'
 author: 'Nemesis Team'
 branding:
   icon: 'shield'
@@ -42,6 +42,14 @@ inputs:
     description: 'Base Git ref for differential scan'
     required: false
     default: 'origin/main'
+  auto-fix:
+    description: 'Automatically remove toxic files and commit/push cleanups'
+    required: false
+    default: 'false'
+  pr-suggestions:
+    description: 'Generate 1-click interactive GitHub PR Review Suggestions'
+    required: false
+    default: 'true'
   max-file-size-mb:
     description: 'Max allowed file size before warning in MB'
     required: false
@@ -119,6 +127,9 @@ outputs:
   ignored-count:
     description: 'Number of findings suppressed via .nemesis.yml'
     value: ${{ steps.run-nemesis.outputs.ignored-count }}
+  auto-fixed-count:
+    description: 'Number of issues resolved automatically'
+    value: ${{ steps.run-nemesis.outputs.auto-fixed-count }}
   report-json:
     description: 'Path to generated JSON report'
     value: ${{ steps.run-nemesis.outputs.report-json }}
@@ -187,6 +198,8 @@ runs:
         INPUT_GENERATE_SBOM: ${{ inputs.generate-sbom }}
         INPUT_DIFF_MODE: ${{ inputs.diff-mode }}
         INPUT_DIFF_BASE_REF: ${{ inputs.diff-base-ref }}
+        INPUT_AUTO_FIX: ${{ inputs.auto-fix }}
+        INPUT_PR_SUGGESTIONS: ${{ inputs.pr-suggestions }}
         INPUT_MAX_FILE_SIZE_MB: ${{ inputs.max-file-size-mb }}
         INPUT_REQUIRE_LICENSE: ${{ inputs.require-license }}
         INPUT_FAIL_ON_CRITICAL: ${{ inputs.fail-on-critical }}

@@ -22,6 +22,7 @@ export interface AuditFinding {
   fileSizeBytes?: number;
   ignored?: boolean;
   ignoreReason?: string;
+  suggestedReplacement?: string;
   raw?: unknown;
 }
 
@@ -49,6 +50,8 @@ export interface AuditReport {
   passed: boolean;
   failureReason?: string;
   sbomPath?: string;
+  autoFixedCount?: number;
+  autoFixCommit?: string;
 }
 
 export interface NemesisConfig {
@@ -61,6 +64,8 @@ export interface NemesisConfig {
   generateSbom: boolean;
   diffMode: boolean;
   diffBaseRef: string;
+  autoFix: boolean;
+  prSuggestions: boolean;
   maxFileSizeMb: number;
   requireLicense: boolean;
   failOnCritical: boolean;

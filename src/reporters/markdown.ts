@@ -16,6 +16,12 @@ export function generateMarkdownReport(report: AuditReport): string {
   if (report.diffMode) {
     sections.push(`> ⚡ **Modo:** *Escaneo Diferencial (solo archivos modificados)*`);
   }
+  if (report.autoFixedCount && report.autoFixedCount > 0) {
+    sections.push(`> 🧹 **Auto-Fix:** Nemesis limpió automáticamente ${report.autoFixedCount} problemas de higiene.`);
+    if (report.autoFixCommit) {
+      sections.push(`> 🤖 **Commit de Auto-Limpieza:** \`${report.autoFixCommit}\``);
+    }
+  }
   sections.push("");
 
   // Severity summary table
