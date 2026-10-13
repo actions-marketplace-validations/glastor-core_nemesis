@@ -59,6 +59,9 @@ auto-remediación:
 ```bash
 git clone https://github.com/glastor-dev/nemesis.git
 cd nemesis
+
+# Activar Git hooks locales nativos (pre-commit y commit-msg)
+deno task setup
 ```
 
 ### 2. Comandos y Tareas Disponibles

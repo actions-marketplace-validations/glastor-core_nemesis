@@ -1,11 +1,7 @@
 import { basename, join, relative } from "@std/path";
 import { walk } from "@std/fs/walk";
 import { exists } from "@std/fs/exists";
-import type {
-  AuditFinding,
-  NemesisConfig,
-  Severity,
-} from "../types.ts";
+import type { AuditFinding, NemesisConfig, Severity } from "../types.ts";
 import type { Scanner, ScannerResult } from "./base.ts";
 import { runCommand } from "../utils/exec.ts";
 

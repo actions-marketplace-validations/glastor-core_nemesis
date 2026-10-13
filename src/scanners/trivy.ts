@@ -1,10 +1,6 @@
 import { join } from "@std/path";
 import { ensureDir } from "@std/fs";
-import type {
-  AuditFinding,
-  NemesisConfig,
-  Severity,
-} from "../types.ts";
+import type { AuditFinding, NemesisConfig, Severity } from "../types.ts";
 import type { Scanner, ScannerResult } from "./base.ts";
 import { runCommand } from "../utils/exec.ts";
 import { checkTool } from "../utils/tool-checker.ts";

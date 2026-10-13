@@ -1,0 +1,41 @@
+#!/bin/sh
+# Nemesis Pre-Commit Hook
+# Previene la inclusión de secretos, archivos tóxicos, errores de tipos o tests fallidos.
+
+echo "🛡️  [Nemesis Hook] Ejecutando validaciones previas al commit..."
+
+# 1. Verificación de Formato y Linter
+echo "🔍 [Nemesis Hook] Verificando formato y linter..."
+deno fmt --check || {
+  echo "❌ [Nemesis Hook] Error de formato. Ejecuta 'deno task fmt' antes de comitear."
+  exit 1
+}
+
+deno lint || {
+  echo "❌ [Nemesis Hook] Fallo de linter. Corrige los problemas reportados."
+  exit 1
+}
+
+# 2. Verificación de Tipos TypeScript
+echo "⚡ [Nemesis Hook] Verificando tipos TypeScript..."
+deno check src/main.ts || {
+  echo "❌ [Nemesis Hook] Error de tipos TypeScript."
+  exit 1
+}
+
+# 3. Suite de Pruebas Automatizadas
+echo "🧪 [Nemesis Hook] Ejecutando suite de tests..."
+deno test --allow-all || {
+  echo "❌ [Nemesis Hook] Las pruebas unitarias han fallado."
+  exit 1
+}
+
+# 4. Auditoría de Seguridad Nemesis (Escaneo diferencial)
+echo "🔒 [Nemesis Hook] Auditoría Nemesis en archivos modificados (secretos e higiene)..."
+deno run --env --allow-all src/main.ts --diff --fail-on-critical || {
+  echo "❌ [Nemesis Hook] Nemesis detectó vulnerabilidades críticas o secretos en los archivos preparados."
+  exit 1
+}
+
+echo "✔  [Nemesis Hook] Todas las comprobaciones pasaron exitosamente."
+exit 0

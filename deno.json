@@ -13,7 +13,9 @@
     "test": "deno test --allow-all",
     "test:watch": "deno test --allow-all --watch",
     "fmt": "deno fmt",
-    "lint": "deno lint"
+    "lint": "deno lint",
+    "hooks:install": "git config core.hooksPath .githooks",
+    "setup": "deno task hooks:install"
   },
   "imports": {
     "@actions/core": "npm:@actions/core@^1.11.1",

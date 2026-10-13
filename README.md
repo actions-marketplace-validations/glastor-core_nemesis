@@ -179,6 +179,26 @@ deno task compile
 
 ---
 
+## 🪝 Git Hooks Nativos (Zero-Dependency Shift-Left)
+
+Nemesis incluye hooks de Git nativos sin necesidad de Node.js, npm ni
+`node_modules`. Para activarlos en tu copia local:
+
+```bash
+deno task setup
+```
+
+Esto configura automáticamente:
+
+1. **`pre-commit`**: Ejecuta `deno fmt --check`, `deno lint`, `deno check`,
+   `deno test` y una auditoría diferencial de Nemesis
+   (`--diff --fail-on-critical`) para impedir comitear secretos o archivos
+   basura.
+2. **`commit-msg`**: Valida que el mensaje cumpla estrictamente con
+   [Conventional Commits](.github/COMMIT_CONVENTION.md) antes de guardarlo.
+
+---
+
 ## 📄 Licencia
 
 Distribuido bajo la [Licencia MIT](LICENSE).

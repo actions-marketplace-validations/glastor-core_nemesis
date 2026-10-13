@@ -1,5 +1,8 @@
 import { assertEquals } from "@std/assert";
-import { filterIgnoredFindings, type IgnoreRule } from "../src/config/schema.ts";
+import {
+  filterIgnoredFindings,
+  type IgnoreRule,
+} from "../src/config/schema.ts";
 import type { AuditFinding } from "../src/types.ts";
 
 const sampleFindings: AuditFinding[] = [

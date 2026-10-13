@@ -1,0 +1,5 @@
+#!/bin/sh
+# Nemesis Commit Message Hook
+# Ejecuta el verificador nativo en Deno para validar Conventional Commits
+
+deno run --allow-read scripts/verify-commit.ts "$1"
