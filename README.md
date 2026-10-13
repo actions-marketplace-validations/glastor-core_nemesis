@@ -62,7 +62,7 @@ jobs:
           fetch-depth: 0
 
       - name: Ejecutar Auditor Nemesis
-        uses: tu-usuario/nemesis@main # o @v1
+        uses: glastor-dev/nemesis@master
         with:
           fail-on-critical: false     # Ponlo en 'true' para bloquear merges con fallos críticos
           diff-mode: true             # Escanea únicamente lo modificado en el PR
