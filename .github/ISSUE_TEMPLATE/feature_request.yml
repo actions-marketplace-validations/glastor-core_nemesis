@@ -1,55 +1,74 @@
-name: "✨ Feature request"
-description: "Propón una mejora o nueva funcionalidad"
+name: "✨ Solicitud de Funcionalidad"
+description: "Propón una nueva funcionalidad, scanner, regla de higiene o integración para Nemesis"
 title: "[Feature]: "
 labels: ["enhancement"]
 body:
   - type: markdown
     attributes:
       value: |
-        Gracias por la propuesta.
-        Cuanto más claro sea el caso de uso, más fácil será evaluarlo.
+        ¡Gracias por tu iniciativa para hacer de Nemesis una herramienta DevSecOps más potente y completa!
+        Cuanto más claro y fundamentado sea el caso de uso, más rápida será su evaluación técnica.
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: "Área o Componente Principal"
+      description: "Selecciona el área técnica donde encaja esta propuesta."
+      options:
+        - "Nuevo Scanner o Regla de Seguridad (SAST, SCA, Secretos)"
+        - "Regla de Higiene de Repositorio o Detección de Archivos Tóxicos"
+        - "Auto-Remediación, Auto-Fix y Commits de Limpieza"
+        - "GitHub PR Review Suggestions y Anotaciones"
+        - "Reportes y Compliance (SARIF, CycloneDX SBOM, Webhooks)"
+        - "GitHub Action e Integración CI/CD"
+        - "Rendimiento, CLI UX y Opciones de Configuración"
+        - "Otro"
+    validations:
+      required: true
 
   - type: textarea
     id: problem
     attributes:
-      label: "Problema / necesidad"
-      description: "¿Qué problema querés resolver?"
-      placeholder: "Hoy es difícil/tedioso..."
+      label: "Problema o Necesidad"
+      description: "¿Qué limitación, riesgo de seguridad o fricción actual busca resolver esta propuesta?"
+      placeholder: "Actualmente es complejo auditar..."
     validations:
       required: true
 
   - type: textarea
     id: proposal
     attributes:
-      label: "Propuesta"
-      description: "¿Qué te gustaría que haga el proyecto?"
-      placeholder: "Me gustaría que..."
+      label: "Propuesta de Solución"
+      description: "¿Qué debería hacer Nemesis exactamente? Incluye ejemplos de uso, flags de CLI o sintaxis en .nemesis.yml si aplica."
+      placeholder: "Me gustaría que Nemesis agregara un flag `--check-...` o una directiva en `.nemesis.yml`..."
     validations:
       required: true
 
   - type: textarea
     id: alternatives
     attributes:
-      label: "Alternativas"
-      description: "¿Qué alternativas consideraste?"
-      placeholder: "Alternativa A..., alternativa B..."
+      label: "Alternativas Consideradas"
+      description: "¿Qué alternativas o soluciones temporales has evaluado y por qué esta propuesta es mejor?"
+      placeholder: "Se evaluó usar un script externo, pero integrarlo en el motor de Nemesis permite..."
     validations:
       required: false
 
   - type: textarea
     id: context
     attributes:
-      label: "Contexto adicional"
-      description: "Links, ejemplos, capturas, referencias."
+      label: "Contexto Adicional / Referencias"
+      description: "Enlaces a documentación de seguridad, estándares SPDX/SARIF, especificaciones o capturas."
     validations:
       required: false
 
   - type: checkboxes
     id: checks
     attributes:
-      label: "Checklist"
+      label: "Checklist de Colaboración"
       options:
-        - label: "Busqué issues/PRs existentes relacionados"
+        - label: "He buscado en issues existentes para asegurarme de que no esté duplicada."
           required: true
-        - label: "Puedo aportar un PR si se aprueba la idea"
+        - label: "He leído las pautas de arquitectura en [CONTRIBUTING.md](../CONTRIBUTING.md)."
+          required: true
+        - label: "Estoy dispuesto/a a contribuir con un Pull Request si se aprueba la propuesta."
           required: false

@@ -1,20 +1,51 @@
-name: "🐛 Bug report"
-description: "Reporta un problema reproducible"
+name: "🐛 Reporte de Bug"
+description: "Reporta un problema técnico, error en escaneo o fallo de remediación"
 title: "[Bug]: "
 labels: ["bug"]
 body:
   - type: markdown
     attributes:
       value: |
-        Gracias por reportar el problema.
-        Incluye la mayor cantidad de contexto posible para poder reproducirlo.
+        Gracias por tomarte el tiempo de reportar este problema.
+        Proporcionar detalles específicos sobre el entorno y los scanners activos agiliza enormemente la resolución.
 
   - type: textarea
     id: summary
     attributes:
-      label: "Descripción"
-      description: "¿Qué pasó y qué esperabas que pase?"
-      placeholder: "Descripción clara y concisa del bug."
+      label: "Descripción del fallo"
+      description: "Explica de forma concisa qué falló o qué comportamiento anómalo se presentó."
+      placeholder: "Ejemplo: El scanner de higiene no detectó archivos temporales de emacs..."
+    validations:
+      required: true
+
+  - type: dropdown
+    id: module
+    attributes:
+      label: "Módulo o Scanner afectado"
+      description: "¿Qué componente de Nemesis presentó el problema?"
+      options:
+        - "Higiene y Limpieza de Repositorio"
+        - "Secretos (Gitleaks)"
+        - "SAST (Semgrep)"
+        - "SCA / Dependencias (Trivy)"
+        - "Cumplimiento de Licencias y SBOM"
+        - "Auto-Fix & Commits de Limpieza"
+        - "GitHub PR Review Suggestions"
+        - "Composite GitHub Action (action.yml)"
+        - "CLI / Orquestador Principal"
+        - "Otro / No especificado"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: runtime_mode
+    attributes:
+      label: "Modo de Ejecución"
+      description: "¿Cómo estás ejecutando Nemesis?"
+      options:
+        - "GitHub Action (pipeline CI/CD)"
+        - "Deno CLI local (deno task start / deno run)"
+        - "Binario compilado independiente (bin/nemesis)"
     validations:
       required: true
 
@@ -22,68 +53,78 @@ body:
     id: steps
     attributes:
       label: "Pasos para reproducir"
-      description: "Lista de pasos mínimos para reproducir el problema."
+      description: "Secuencia determinista de pasos para replicar el problema."
       placeholder: |
-        1. ...
-        2. ...
-        3. ...
+        1. Configurar .nemesis.yml con...
+        2. Ejecutar `deno task start --path .`
+        3. Observar la salida errónea...
     validations:
       required: true
 
   - type: textarea
     id: expected
     attributes:
-      label: "Resultado esperado"
-      placeholder: "Qué debería haber ocurrido."
+      label: "Comportamiento esperado"
+      description: "¿Qué resultado debió haber arrojado la auditoría o la remediación?"
+      placeholder: "Ej: Debería reportar 1 advertencia de severidad MEDIUM..."
     validations:
       required: true
 
   - type: textarea
     id: actual
     attributes:
-      label: "Resultado actual"
-      placeholder: "Qué ocurrió realmente (incluye logs si aplica)."
+      label: "Comportamiento real observado"
+      description: "¿Qué ocurrió en realidad?"
+      placeholder: "Ej: Se produjo un error de ejecución o se omitió el archivo..."
     validations:
       required: true
 
   - type: input
     id: version
     attributes:
-      label: "Versión"
-      description: "Versión del proyecto (tag/commit) o cómo lo instalaste."
-      placeholder: "v1.0.0 / commit abc123 / deno task readme"
+      label: "Versión de Nemesis"
+      description: "Tag de versión, rama o hash del commit utilizado."
+      placeholder: "v1.1.0 / master / commit 9d872e5"
     validations:
       required: false
 
   - type: dropdown
     id: os
     attributes:
-      label: "Sistema operativo"
+      label: "Sistema Operativo"
       options:
-        - "Windows"
-        - "Linux"
+        - "Linux (Ubuntu / Debian / Alpine)"
         - "macOS"
+        - "Windows"
+        - "GitHub Hosted Runner"
         - "Otro"
     validations:
       required: false
 
-  - type: textarea
-    id: env
+  - type: input
+    id: deno_version
     attributes:
-      label: "Entorno"
-      description: "Incluye Deno y cualquier detalle relevante."
-      placeholder: |
-        - Deno: 2.x (pega salida de `deno --version`)
-        - SO: Windows/Linux/macOS
-        - Instalación: deno install / deno run
+      label: "Versión de Deno"
+      description: "Salida del comando `deno --version`."
+      placeholder: "deno 2.x.x"
     validations:
       required: false
 
   - type: textarea
     id: logs
     attributes:
-      label: "Logs / salida de error"
-      description: "Pega aquí la salida relevante."
+      label: "Logs y salida de terminal"
+      description: "Pega la traza de error, logs de GitHub Actions o reporte relevante."
       render: shell
     validations:
       required: false
+
+  - type: checkboxes
+    id: confirmations
+    attributes:
+      label: "Confirmaciones"
+      options:
+        - label: "He verificado que este bug no haya sido reportado previamente en GitHub Issues."
+          required: true
+        - label: "He confirmado que este reporte no contiene secretos, tokens ni contraseñas reales."
+          required: true
