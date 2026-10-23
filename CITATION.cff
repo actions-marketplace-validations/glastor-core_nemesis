@@ -8,8 +8,8 @@ authors:
   - family-names: "Cardoso"
     given-names: "Andrés Antonio"
     email: "glastor.info@gmail.com"
-repository-code: "https://github.com/glastor-dev/nemesis"
-url: "https://github.com/glastor-dev/nemesis"
+repository-code: "https://github.com/glastor-core/nemesis"
+url: "https://github.com/glastor-core/nemesis"
 license: MIT
 keywords:
   - "DevSecOps"

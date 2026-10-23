@@ -37,6 +37,47 @@ Este proyecto se adhiere a:
 
 ---
 
+## [1.2.1] - 2026-10-23
+
+**Nombre del Release:** "Docker Engine Resilience, Push Protection & Glastor
+Core Alignment"\
+**Tipo de Release:** Patch / Resiliency Release
+
+### 🐛 Fixed
+
+- **Verificación Real de Docker Engine:** `checkTool` ahora verifica el estado
+  del daemon con `docker info` (evitando falsos positivos cuando solo el CLI
+  client está instalado pero el motor está inactivo).
+- **Fallbacks Incondicionales ante Fallo de Reporte:** Si `gitleaks` o `trivy`
+  no producen el reporte JSON, se ejecuta de forma segura el analizador nativo
+  en lugar de devolver 0 hallazgos.
+- **Cancelación Real de Subprocesos:** Se conecta
+  `signal: abortController.signal` a `Deno.Command` en `runCommand` para aplicar
+  timeouts reales ante procesos colgados.
+
+### ✨ Added
+
+- **Git Hook de Push Protection (`pre-push`):** Intercepta y bloquea envíos con
+  secretos o vulnerabilidades críticas antes de alcanzar el repositorio remoto.
+- **Resolución Dinámica de Líneas en PR Suggestions:** Identificación automática
+  del número de línea para paquetes con CVEs en manifiestos (`package.json`,
+  `deno.json`), activando revisiones interactivas de 1-clic.
+- **Fusión de `.nemesis.yml` en Runtime:** Sincronización automática de
+  `settings` (`maxFileSizeMb`, `requireLicense`) con la configuración activa.
+- **Tareas de Compilación Darwin:** Tareas `compile:darwin` y
+  `compile:darwin-arm` en `deno.json` para compilación local en macOS.
+
+### 🔄 Changed
+
+- **Herramientas de Auditoría en `action.yml`:** Actualizado Gitleaks a
+  `v8.30.1`, Trivy a `v0.76.0`, y agregado `--break-system-packages` para
+  Semgrep en Ubuntu 24.04 (PEP 668).
+- **Alineación de Gobernanza:** Migración completa de referencias a la
+  organización `glastor-core/nemesis` y documentación de la arquitectura de 3
+  pilares de Glastor Core en `README.md`.
+
+---
+
 ## [1.2.0] - 2026-10-13
 
 **Nombre del Release:** "Native Scanning Resilience & Automated Testing"\

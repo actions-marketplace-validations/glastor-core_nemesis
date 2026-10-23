@@ -57,7 +57,7 @@ auto-remediación:
 ### 1. Clonación del Repositorio
 
 ```bash
-git clone https://github.com/glastor-dev/nemesis.git
+git clone https://github.com/glastor-core/nemesis.git
 cd nemesis
 
 # Activar Git hooks locales nativos (pre-commit y commit-msg)
@@ -155,10 +155,10 @@ puntos del checklist estén marcados.
 ## 📧 Canales de Comunicación y Soporte
 
 - **GitHub Discussions:**
-  [glastor-dev/nemesis/discussions](https://github.com/glastor-dev/nemesis/discussions)
+  [glastor-core/nemesis/discussions](https://github.com/glastor-core/nemesis/discussions)
   (consultas de arquitectura y propuestas).
 - **GitHub Issues:**
-  [glastor-dev/nemesis/issues](https://github.com/glastor-dev/nemesis/issues)
+  [glastor-core/nemesis/issues](https://github.com/glastor-core/nemesis/issues)
   (bugs y tareas).
 - **Soporte Corporativo:**
   [glastor.info@gmail.com](mailto:glastor.info@gmail.com)

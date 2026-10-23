@@ -172,7 +172,7 @@ export class GitleaksScanner implements Scanner {
       console.log(`[Gitleaks] Executing: ${cmd} ${args.join(" ")}`);
     }
 
-    const execResult = await runCommand(cmd, args, { cwd: Deno.cwd() });
+    const _execResult = await runCommand(cmd, args, { cwd: Deno.cwd() });
     const durationMs = Date.now() - startTime;
     const findings: AuditFinding[] = [];
 
@@ -203,10 +203,8 @@ export class GitleaksScanner implements Scanner {
         });
       }
     } catch {
-      if (execResult.code > 1) {
-        // Fall back to native scanner if gitleaks failed unexpectedly
-        return await this.runNativeFallback(config, startTime, counts);
-      }
+      // Fall back to native scanner if gitleaks report was not produced or failed
+      return await this.runNativeFallback(config, startTime, counts);
     }
 
     return {

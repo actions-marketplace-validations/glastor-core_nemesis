@@ -13,7 +13,7 @@ Utiliza este espacio para dudas de implementación, configuración avanzada en
 pipelines de GitHub Actions, sugerencias de nuevas reglas de higiene o
 intercambio de mejores prácticas DevSecOps.
 
-- **[GitHub Discussions de Nemesis](https://github.com/glastor-dev/nemesis/discussions)**
+- **[GitHub Discussions de Nemesis](https://github.com/glastor-core/nemesis/discussions)**
   - _Ideal para:_ Consultas técnicas, ideas de mejora, casos de uso y feedback
     general.
 
@@ -24,7 +24,7 @@ intercambio de mejores prácticas DevSecOps.
 Si detectas un comportamiento anómalo, un falso positivo en algún scanner o
 requieres una funcionalidad específica:
 
-- **[Abrir un Ticket en GitHub Issues](https://github.com/glastor-dev/nemesis/issues)**
+- **[Abrir un Ticket en GitHub Issues](https://github.com/glastor-core/nemesis/issues)**
 - **Recomendación:** Proporciona logs de ejecución
   (`deno task start --path ...`), versión de Deno y archivo `.nemesis.yml` si
   aplica.
@@ -37,9 +37,9 @@ Para reportar vulnerabilidades críticas de seguridad o fallos en el manejo de
 tokens y secretos, **no utilices issues públicos**:
 
 1. Consulta nuestra
-   **[Política de Seguridad](https://github.com/glastor-dev/nemesis/security/policy)**.
+   **[Política de Seguridad](https://github.com/glastor-core/nemesis/security/policy)**.
 2. Abre un reporte privado en
-   **[GitHub Security Advisories](https://github.com/glastor-dev/nemesis/security/advisories/new)**
+   **[GitHub Security Advisories](https://github.com/glastor-core/nemesis/security/advisories/new)**
    o contacta a: **[glastor.info@gmail.com](mailto:glastor.info@gmail.com)**.
 
 ---

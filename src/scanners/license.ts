@@ -103,7 +103,7 @@ export class LicenseScanner implements Scanner {
       console.log(`[LicenseScanner] Executing: ${cmd} ${args.join(" ")}`);
     }
 
-    const execResult = await runCommand(cmd, args, {
+    const _execResult = await runCommand(cmd, args, {
       cwd: Deno.cwd(),
       timeoutMs: 300_000,
     });
@@ -182,10 +182,8 @@ export class LicenseScanner implements Scanner {
         }
       }
     } catch {
-      if (execResult.code !== 0 && execResult.code !== 1) {
-        // Fall back to native scanner
-        return await this.runNativeFallback(config, startTime, counts);
-      }
+      // Fall back to native scanner if trivy report was not produced or failed
+      return await this.runNativeFallback(config, startTime, counts);
     }
 
     return {

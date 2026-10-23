@@ -1,6 +1,6 @@
 # 🛡️ Política de Seguridad (Security Policy)
 
-En el proyecto **Nemesis** (`glastor-dev/nemesis`), desarrollado por
+En el proyecto **Nemesis** (`glastor-core/nemesis`), desarrollado por
 `GLASTOR-DEV` (división de desarrollo de GLASTOR®), la seguridad del software y
 la protección de la cadena de suministro son prioridades fundamentales.
 
@@ -29,7 +29,7 @@ coordinada:
 ### Opción 1: GitHub Private Vulnerability Reporting (Recomendado)
 
 Accede directamente a la herramienta oficial de GitHub: 👉
-[Reportar vulnerabilidad privada en Nemesis](https://github.com/glastor-dev/nemesis/security/advisories/new)
+[Reportar vulnerabilidad privada en Nemesis](https://github.com/glastor-core/nemesis/security/advisories/new)
 
 ### Opción 2: Correo Electrónico Seguro
 

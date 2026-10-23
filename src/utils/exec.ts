@@ -16,16 +16,17 @@ export async function runCommand(
 ): Promise<ExecResult> {
   const timeoutMs = options?.timeoutMs ?? 300_000; // 5 min default
 
+  const abortController = new AbortController();
+  const timer = setTimeout(() => abortController.abort(), timeoutMs);
+
   const command = new Deno.Command(cmd, {
     args,
     cwd: options?.cwd,
     env: options?.env,
     stdout: "piped",
     stderr: "piped",
+    signal: abortController.signal,
   });
-
-  const abortController = new AbortController();
-  const timer = setTimeout(() => abortController.abort(), timeoutMs);
 
   try {
     const child = command.spawn();

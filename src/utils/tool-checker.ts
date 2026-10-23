@@ -22,17 +22,22 @@ export async function checkTool(
     };
   }
 
-  // Check if Docker is available as fallback
+  // Check if Docker daemon is available and responsive as fallback
   const dockerCheck = await runCommand("docker", ["--version"], {
-    timeoutMs: 5_000,
+    timeoutMs: 3_000,
   });
   if (dockerCheck.code === 0) {
-    return {
-      name,
-      available: true,
-      version: "docker-fallback",
-      useDocker: true,
-    };
+    const dockerDaemonCheck = await runCommand("docker", ["info"], {
+      timeoutMs: 3_000,
+    });
+    if (dockerDaemonCheck.code === 0) {
+      return {
+        name,
+        available: true,
+        version: "docker-fallback",
+        useDocker: true,
+      };
+    }
   }
 
   return {

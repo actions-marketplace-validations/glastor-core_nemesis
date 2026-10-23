@@ -95,7 +95,7 @@ jobs:
           fetch-depth: 0
 
       - name: Ejecutar Auditor & Remediation Bot
-        uses: glastor-dev/nemesis@master
+        uses: glastor-core/nemesis@master
         with:
           auto-fix: true # Limpia archivos basura y comitea automáticamente
           pr-suggestions: true # Genera sugerencias de 1-clic para dependencias
@@ -179,7 +179,7 @@ deno task compile
 
 ---
 
-## 🪝 Git Hooks Nativos (Zero-Dependency Shift-Left)
+## 🪝 Git Hooks Nativos & Push Protection (Zero-Dependency Shift-Left)
 
 Nemesis incluye hooks de Git nativos sin necesidad de Node.js, npm ni
 `node_modules`. Para activarlos en tu copia local:
@@ -188,14 +188,33 @@ Nemesis incluye hooks de Git nativos sin necesidad de Node.js, npm ni
 deno task setup
 ```
 
-Esto configura automáticamente:
+Esto configura automáticamente el estándar de **Push Protection**:
 
 1. **`pre-commit`**: Ejecuta `deno fmt --check`, `deno lint`, `deno check`,
    `deno test` y una auditoría diferencial de Nemesis
    (`--diff --fail-on-critical`) para impedir comitear secretos o archivos
    basura.
-2. **`commit-msg`**: Valida que el mensaje cumpla estrictamente con
+2. **`pre-push`**: Activa la **protección nativa contra push accidental** (_Push
+   Protection_), auditando el delta de código antes de enviar datos al
+   repositorio remoto.
+3. **`commit-msg`**: Valida que el mensaje cumpla estrictamente con
    [Conventional Commits](.github/COMMIT_CONVENTION.md) antes de guardarlo.
+
+---
+
+## 🏛️ Arquitectura Glastor Core
+
+Nemesis es el componente de seguridad fundamental del ecosistema **Glastor
+Core**:
+
+- 🛡️ **DevSecOps & Security Gateways:** Implementa _Continuous Audit & Push
+  Protection_ en pipelines de CI/CD y en la máquina del desarrollador.
+- 📦 **High-Performance Libraries & CLI:** Provee herramientas _Zero-Dependency_
+  compiladas para múltiples arquitecturas (Linux, Windows, macOS x86 y ARM64) y
+  motores de escaneo nativos en TypeScript.
+- ⚡ **Edge Engine & Microservices:** Protege y asegura repositorios de
+  microservicios y motores Edge de alto rendimiento (como Glastor Medusa y
+  Hyper-Flow).
 
 ---
 

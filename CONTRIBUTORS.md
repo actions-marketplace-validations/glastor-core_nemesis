@@ -1,7 +1,7 @@
 # 🏛️ Gobernanza, Escalabilidad y Sostenibilidad Técnica
 
-![Contributors](https://img.shields.io/github/contributors/glastor-dev/nemesis)
-![Stars](https://img.shields.io/github/stars/glastor-dev/nemesis)
+![Contributors](https://img.shields.io/github/contributors/glastor-core/nemesis)
+![Stars](https://img.shields.io/github/stars/glastor-core/nemesis)
 ![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)
 
 `**GLASTOR-DEV** (división de desarrollo de GLASTOR®)` concibe **Nemesis** como
@@ -58,7 +58,7 @@ esta plataforma:
   [Open Collective](https://opencollective.com/datagroupssl) para gobernanza de
   fondos.
 - **Validación del Proyecto:** ⭐
-  [Star este repositorio](https://github.com/glastor-dev/nemesis) para
+  [Star este repositorio](https://github.com/glastor-core/nemesis) para
   incrementar nuestra tracción y visibilidad en el ecosistema global de
   DevSecOps.
 

@@ -1,0 +1,15 @@
+#!/bin/sh
+# Nemesis Pre-Push Hook (Push Protection)
+# Previene el envío al repositorio remoto de credenciales filtradas, archivos tóxicos o vulnerabilidades críticas.
+
+echo "🛡️  [Nemesis Push Protection] Auditando código antes del push..."
+
+# Ejecutar auditoría Nemesis con tolerancia cero a secretos o fallos críticos
+deno run --env --allow-all src/main.ts --diff --fail-on-critical || {
+  echo "❌ [Nemesis Push Protection] BLOQUEADO: Se detectaron secretos o vulnerabilidades críticas."
+  echo "👉 Corrige los problemas reportados antes de hacer git push."
+  exit 1
+}
+
+echo "✔  [Nemesis Push Protection] Verificación aprobada. Enviando cambios al repositorio remoto..."
+exit 0

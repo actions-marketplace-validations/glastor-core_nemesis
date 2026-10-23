@@ -42,10 +42,26 @@ async function main() {
     config.targetPath,
     config.configFile,
   );
-  if (fileConfig && config.verbose) {
-    console.log(
-      `[Nemesis] Loaded config file with ${fileConfig.ignore.length} ignore rules.`,
-    );
+  if (fileConfig) {
+    if (config.verbose) {
+      console.log(
+        `[Nemesis] Loaded config file with ${fileConfig.ignore.length} ignore rules.`,
+      );
+    }
+    if (fileConfig.settings) {
+      if (
+        fileConfig.settings.maxFileSizeMb &&
+        !Deno.args.includes("--max-file-size")
+      ) {
+        config.maxFileSizeMb = fileConfig.settings.maxFileSizeMb;
+      }
+      if (
+        fileConfig.settings.requireLicense !== undefined &&
+        !Deno.args.includes("--require-license")
+      ) {
+        config.requireLicense = fileConfig.settings.requireLicense;
+      }
+    }
   }
 
   // 2. Differential Scanning Check

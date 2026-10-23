@@ -1,3 +1,5 @@
+import { join } from "@std/path";
+import { exists } from "@std/fs/exists";
 import * as github from "@actions/github";
 import * as core from "@actions/core";
 import type { AuditReport } from "../types.ts";
@@ -33,7 +35,29 @@ export async function postPullRequestSuggestions(
   const reviewComments: ReviewComment[] = [];
 
   for (const f of report.findings) {
-    if (!f.file || !f.line) continue;
+    if (!f.file) continue;
+
+    let targetLine = f.line;
+    if (!targetLine && f.category === "SCA" && f.package) {
+      try {
+        const filePath = join(report.targetPath, f.file);
+        if (await exists(filePath)) {
+          const content = await Deno.readTextFile(filePath);
+          const lines = content.split("\n");
+          const pkgPattern = new RegExp(`["']${f.package}["']`);
+          for (let i = 0; i < lines.length; i++) {
+            if (pkgPattern.test(lines[i])) {
+              targetLine = i + 1;
+              break;
+            }
+          }
+        }
+      } catch {
+        // Ignore read errors
+      }
+    }
+
+    if (!targetLine) continue;
 
     // 1. Dependency vulnerability with fixed version (SCA)
     if (f.category === "SCA" && f.package && f.fixedVersion) {
@@ -53,7 +77,7 @@ export async function postPullRequestSuggestions(
 
       reviewComments.push({
         path: f.file.replace(/\\/g, "/"),
-        line: f.line,
+        line: targetLine,
         side: "RIGHT",
         body: suggestionBody,
       });
@@ -76,7 +100,7 @@ export async function postPullRequestSuggestions(
 
       reviewComments.push({
         path: f.file.replace(/\\/g, "/"),
-        line: f.line,
+        line: targetLine,
         side: "RIGHT",
         body: suggestionBody,
       });
@@ -96,7 +120,7 @@ export async function postPullRequestSuggestions(
 
       reviewComments.push({
         path: f.file.replace(/\\/g, "/"),
-        line: f.line,
+        line: targetLine,
         side: "RIGHT",
         body: suggestionBody,
       });

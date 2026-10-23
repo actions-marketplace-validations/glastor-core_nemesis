@@ -1,6 +1,6 @@
 {
   "name": "nemesis",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "license": "MIT",
   "exports": "./src/main.ts",
   "tasks": {
@@ -9,6 +9,8 @@
     "compile": "deno compile --allow-all --output bin/nemesis src/main.ts",
     "compile:linux": "deno compile --allow-all --target x86_64-unknown-linux-gnu --output bin/nemesis-linux src/main.ts",
     "compile:windows": "deno compile --allow-all --target x86_64-pc-windows-msvc --output bin/nemesis-windows.exe src/main.ts",
+    "compile:darwin": "deno compile --allow-all --target x86_64-apple-darwin --output bin/nemesis-darwin src/main.ts",
+    "compile:darwin-arm": "deno compile --allow-all --target aarch64-apple-darwin --output bin/nemesis-darwin-arm64 src/main.ts",
     "check": "deno check src/main.ts",
     "test": "deno test --allow-all",
     "test:watch": "deno test --allow-all --watch",
