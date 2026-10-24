@@ -37,6 +37,15 @@ Este proyecto se adhiere a:
 
 ---
 
+## [1.3.0] - 2026-10-24
+
+### ✨ Added
+
+- feat(ci): automate semantic versioning on push and harden supply chain dependencies (`f930289`)
+- feat(core): release v1.2.1 with docker resilience and push protection (`ab3bddf`)
+
+---
+
 ## [1.2.1] - 2026-10-23
 
 **Nombre del Release:** "Docker Engine Resilience, Push Protection & Glastor
