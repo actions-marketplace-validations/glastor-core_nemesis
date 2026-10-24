@@ -7,34 +7,34 @@
 
 # [ GLOBAL MAINTAINER ]
 # Revisor por defecto de todos los activos del repositorio.
-* @glastor-dev
+* @glastor-core
 
 # [ INFRAESTRUCTURA DE GITHUB ACTIONS & CONFIGURACIÓN ]
 # Workflows de CI/CD y metadatos de la GitHub Action.
-.github/ @glastor-dev
-action.yml @glastor-dev
-deno.json @glastor-dev
-deno.lock @glastor-dev
-.nemesis.yml @glastor-dev
+.github/ @glastor-core
+action.yml @glastor-core
+deno.json @glastor-core
+deno.lock @glastor-core
+.nemesis.yml @glastor-core
 
 # [ CÓDIGO FUENTE & MÓDULOS DEL MOTOR ]
 # Módulos centrales de escaneo, remediación, reportes y utilidades.
-/src/ @glastor-dev
-/src/scanners/ @glastor-dev
-/src/reporters/ @glastor-dev
-/src/remediation/ @glastor-dev
-/src/github/ @glastor-dev
-/src/utils/ @glastor-dev
-*.ts @glastor-dev
+/src/ @glastor-core
+/src/scanners/ @glastor-core
+/src/reporters/ @glastor-core
+/src/remediation/ @glastor-core
+/src/github/ @glastor-core
+/src/utils/ @glastor-core
+*.ts @glastor-core
 
 # [ GOBERNANZA, COMPLIANCE & DOCUMENTACIÓN ]
 # Documentación pública y archivos de licencia/contribución.
-README.md @glastor-dev
-CHANGELOG.md @glastor-dev
-CONTRIBUTING.md @glastor-dev
-CONTRIBUTORS.md @glastor-dev
-CITATION.cff @glastor-dev
-SECURITY.md @glastor-dev
-LICENSE @glastor-dev
+README.md @glastor-core
+CHANGELOG.md @glastor-core
+CONTRIBUTING.md @glastor-core
+CONTRIBUTORS.md @glastor-core
+CITATION.cff @glastor-core
+SECURITY.md @glastor-core
+LICENSE @glastor-core
 
 # ═══════════════════════════════════════════════════════════════════════════

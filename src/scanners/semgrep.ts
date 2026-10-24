@@ -78,7 +78,7 @@ export class SemgrepScanner implements Scanner {
         "--rm",
         "-v",
         `${Deno.cwd()}:/src`,
-        "returntocorp/semgrep",
+        "semgrep/semgrep:1.98.0",
         "semgrep",
         "scan",
         "--config",

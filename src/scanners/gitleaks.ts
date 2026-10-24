@@ -139,7 +139,7 @@ export class GitleaksScanner implements Scanner {
         "--rm",
         "-v",
         `${Deno.cwd()}:/work`,
-        "zricethezav/gitleaks:latest",
+        "zricethezav/gitleaks:v8.21.2",
         "detect",
         "--source",
         `/work/${config.targetPath}`,
@@ -235,6 +235,7 @@ export class GitleaksScanner implements Scanner {
       /\.(png|jpe?g|gif|ico|pdf|zip|tar|gz|exe|dll|so|wasm|lock)$/i;
 
     try {
+      const filesToScan: string[] = [];
       for await (
         const entry of walk(targetDir, {
           includeFiles: true,
@@ -243,47 +244,60 @@ export class GitleaksScanner implements Scanner {
         })
       ) {
         const fileName = basename(entry.path);
-        if (skipExtensions.test(fileName)) continue;
-
-        try {
-          const stat = await Deno.stat(entry.path);
-          if (stat.size > 2 * 1024 * 1024) continue; // Skip large blobs
-
-          const text = await Deno.readTextFile(entry.path);
-          const lines = text.split("\n");
-          const relPath = relative(targetDir, entry.path).replace(/\\/g, "/");
-
-          for (let lineNum = 1; lineNum <= lines.length; lineNum++) {
-            const line = lines[lineNum - 1];
-            if (line.length > 2000) continue; // Skip minified lines
-
-            for (const pat of this.nativeSecretPatterns) {
-              const match = pat.regex.exec(line);
-              if (match) {
-                counts.CRITICAL++;
-                const matchedSecret = match[0];
-                const masked = matchedSecret.length > 8
-                  ? `${matchedSecret.slice(0, 4)}...${matchedSecret.slice(-4)}`
-                  : "****";
-
-                findings.push({
-                  id: `SECRET-NATIVE-${findingIndex++}`,
-                  tool: `${this.name} (native)`,
-                  category: this.category,
-                  severity: "CRITICAL",
-                  title: `${pat.name} Detectado: [${masked}]`,
-                  description: pat.description,
-                  file: relPath,
-                  line: lineNum,
-                  ruleId: pat.id,
-                });
-                break; // One match per line
-              }
-            }
-          }
-        } catch {
-          // Skip unreadable files
+        if (!skipExtensions.test(fileName)) {
+          filesToScan.push(entry.path);
         }
+      }
+
+      // Process files concurrently in chunks to optimize I/O and CPU utilization
+      const CONCURRENCY_CHUNK_SIZE = 16;
+      for (let i = 0; i < filesToScan.length; i += CONCURRENCY_CHUNK_SIZE) {
+        const chunk = filesToScan.slice(i, i + CONCURRENCY_CHUNK_SIZE);
+        await Promise.all(
+          chunk.map(async (filePath) => {
+            try {
+              const stat = await Deno.stat(filePath);
+              if (stat.size > 2 * 1024 * 1024) return; // Skip large blobs
+
+              const text = await Deno.readTextFile(filePath);
+              const lines = text.split("\n");
+              const relPath = relative(targetDir, filePath).replace(/\\/g, "/");
+
+              for (let lineNum = 1; lineNum <= lines.length; lineNum++) {
+                const line = lines[lineNum - 1];
+                if (line.length > 2000) continue; // Skip minified lines
+
+                for (const pat of this.nativeSecretPatterns) {
+                  const match = pat.regex.exec(line);
+                  if (match) {
+                    counts.CRITICAL++;
+                    const matchedSecret = match[0];
+                    const masked = matchedSecret.length > 8
+                      ? `${matchedSecret.slice(0, 4)}...${
+                        matchedSecret.slice(-4)
+                      }`
+                      : "****";
+
+                    findings.push({
+                      id: `SECRET-NATIVE-${findingIndex++}`,
+                      tool: `${this.name} (native)`,
+                      category: this.category,
+                      severity: "CRITICAL",
+                      title: `${pat.name} Detectado: [${masked}]`,
+                      description: pat.description,
+                      file: relPath,
+                      line: lineNum,
+                      ruleId: pat.id,
+                    });
+                    break; // One match per line
+                  }
+                }
+              }
+            } catch {
+              // Skip unreadable files
+            }
+          }),
+        );
       }
     } catch (err) {
       return {

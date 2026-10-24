@@ -76,7 +76,7 @@ export class LicenseScanner implements Scanner {
         "--rm",
         "-v",
         `${Deno.cwd()}:/work`,
-        "aquasec/trivy:latest",
+        "aquasec/trivy:0.58.2",
         "fs",
         "--scanners",
         "license",

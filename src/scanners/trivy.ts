@@ -94,7 +94,7 @@ export class TrivyScanner implements Scanner {
         "--rm",
         "-v",
         `${Deno.cwd()}:/work`,
-        "aquasec/trivy:latest",
+        "aquasec/trivy:0.58.2",
         "fs",
         "--format",
         "json",

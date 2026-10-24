@@ -4,6 +4,18 @@ on:
   push:
     tags:
       - "v*"
+  workflow_call:
+    inputs:
+      tag_name:
+        description: "Git tag to release"
+        required: false
+        type: string
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: "Git tag to release"
+        required: false
+        type: string
 
 permissions:
   contents: write
@@ -14,7 +26,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v7
+        uses: actions/checkout@v4
 
       - name: Setup Deno Runtime
         uses: denoland/setup-deno@v2
@@ -51,6 +63,7 @@ jobs:
       - name: Publish GitHub Release
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ inputs.tag_name || github.ref_name }}
           files: |
             dist/nemesis-linux-x86_64
             dist/nemesis-windows-x86_64.exe
