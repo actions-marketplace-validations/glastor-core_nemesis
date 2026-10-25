@@ -46,8 +46,13 @@ jobs:
 
           git tag -a "${{ steps.semver.outputs.tag_name }}" -m "Release ${{ steps.semver.outputs.tag_name }}"
 
+          # Update floating major version tag (e.g. v1) for GitHub Actions Marketplace
+          MAJOR_TAG=$(echo "${{ steps.semver.outputs.tag_name }}" | cut -d. -f1)
+          git tag -fa "$MAJOR_TAG" -m "Release $MAJOR_TAG"
+
           git push origin HEAD:${{ github.ref_name }}
           git push origin "${{ steps.semver.outputs.tag_name }}"
+          git push origin "$MAJOR_TAG" --force
 
   publish-release:
     name: Build & Publish Release

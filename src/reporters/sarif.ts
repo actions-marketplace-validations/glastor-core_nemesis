@@ -86,8 +86,8 @@ export function generateSarifReport(report: AuditReport): string {
         tool: {
           driver: {
             name: "Nemesis Security Auditor",
-            version: "1.0.0",
-            informationUri: "https://github.com",
+            version: "1.3.0",
+            informationUri: "https://github.com/glastor-core/nemesis",
             rules: sarifRules,
           },
         },

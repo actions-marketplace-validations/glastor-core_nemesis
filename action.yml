@@ -1,6 +1,6 @@
 name: "Nemesis Universal Security, Hygiene & Compliance Auditor"
-description: "Automated DevSecOps security, hygiene, license compliance, auto-clean commits & 1-click PR suggestions powered by Deno & TypeScript"
-author: "Nemesis Team"
+description: "Automated DevSecOps security, hygiene, license compliance, auto-clean commits & 1-click PR suggestions"
+author: "Glastor Core / Nemesis Team"
 branding:
   icon: "shield"
   color: "purple"
@@ -179,7 +179,7 @@ runs:
         fi
 
         # Install Trivy if missing
-        if ! command -v trivy &> /dev/null && ([ "${{ inputs.scan-sca }}" = "true" ] || [ "${{ inputs.scan-licenses }}" = "true" ]); then
+        if ! command -v trivy &> /dev/null && ([ "${{ inputs.scan-sca }}" = "true" ] || [ "${{ inputs.scan-licenses }}" = "true" ] || [ "${{ inputs.generate-sbom }}" = "true" ]); then
           echo "[Nemesis] Installing Trivy..."
           curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sudo sh -s -- -b /usr/local/bin v0.76.0
         fi
@@ -215,7 +215,7 @@ runs:
         INPUT_SEMGREP_RULES: ${{ inputs.semgrep-rules }}
         INPUT_TRIVY_SEVERITY: ${{ inputs.trivy-severity }}
       run: |
-        deno run --allow-all "${{ github.action_path }}/src/main.ts"
+        deno run --allow-all --config "${{ github.action_path }}/deno.json" "${{ github.action_path }}/src/main.ts"
 
     - name: Upload SARIF to GitHub Security Tab
       if: ${{ inputs.upload-sarif == 'true' && hashFiles(format('{0}/nemesis-report.sarif', inputs.output-dir)) != '' }}

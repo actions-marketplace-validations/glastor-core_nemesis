@@ -69,44 +69,46 @@ export class LicenseScanner implements Scanner {
     let args: string[] = [];
 
     // 1. Run License Scan via Trivy
-    if (tool.useDocker) {
-      cmd = "docker";
-      args = [
-        "run",
-        "--rm",
-        "-v",
-        `${Deno.cwd()}:/work`,
-        "aquasec/trivy:0.58.2",
-        "fs",
-        "--scanners",
-        "license",
-        "--format",
-        "json",
-        "--output",
-        `/work/${reportPath}`,
-        `/work/${config.targetPath}`,
-      ];
-    } else {
-      args = [
-        "fs",
-        "--scanners",
-        "license",
-        "--format",
-        "json",
-        "--output",
-        reportPath,
-        config.targetPath,
-      ];
-    }
+    if (config.scanLicenses) {
+      if (tool.useDocker) {
+        cmd = "docker";
+        args = [
+          "run",
+          "--rm",
+          "-v",
+          `${Deno.cwd()}:/work`,
+          "aquasec/trivy:0.58.2",
+          "fs",
+          "--scanners",
+          "license",
+          "--format",
+          "json",
+          "--output",
+          `/work/${reportPath}`,
+          `/work/${config.targetPath}`,
+        ];
+      } else {
+        args = [
+          "fs",
+          "--scanners",
+          "license",
+          "--format",
+          "json",
+          "--output",
+          reportPath,
+          config.targetPath,
+        ];
+      }
 
-    if (config.verbose) {
-      console.log(`[LicenseScanner] Executing: ${cmd} ${args.join(" ")}`);
-    }
+      if (config.verbose) {
+        console.log(`[LicenseScanner] Executing: ${cmd} ${args.join(" ")}`);
+      }
 
-    const _execResult = await runCommand(cmd, args, {
-      cwd: Deno.cwd(),
-      timeoutMs: 300_000,
-    });
+      await runCommand(cmd, args, {
+        cwd: Deno.cwd(),
+        timeoutMs: 300_000,
+      });
+    }
 
     // 2. Run SBOM Generation if enabled
     if (config.generateSbom) {
@@ -146,44 +148,46 @@ export class LicenseScanner implements Scanner {
     const durationMs = Date.now() - startTime;
     const findings: AuditFinding[] = [];
 
-    try {
-      const fileContent = await Deno.readTextFile(reportPath);
-      const parsed: TrivyLicenseOutput = JSON.parse(fileContent);
-      const targets = parsed.Results ?? [];
+    if (config.scanLicenses && await exists(reportPath)) {
+      try {
+        const fileContent = await Deno.readTextFile(reportPath);
+        const parsed: TrivyLicenseOutput = JSON.parse(fileContent);
+        const targets = parsed.Results ?? [];
 
-      let counter = 1;
-      for (const target of targets) {
-        if (!target.Licenses) continue;
+        let counter = 1;
+        for (const target of targets) {
+          if (!target.Licenses) continue;
 
-        for (const lic of target.Licenses) {
-          const licName = lic.Name ?? "Unknown";
-          const isCopyleft = this.copyleftLicenses.some((cl) =>
-            licName.toUpperCase().includes(cl.toUpperCase())
-          );
+          for (const lic of target.Licenses) {
+            const licName = lic.Name ?? "Unknown";
+            const isCopyleft = this.copyleftLicenses.some((cl) =>
+              licName.toUpperCase().includes(cl.toUpperCase())
+            );
 
-          if (isCopyleft) {
-            counts.HIGH++;
-            findings.push({
-              id: `LICENSE-COPYLEFT-${counter++}`,
-              tool: this.name,
-              category: this.category,
-              severity: "HIGH",
-              title: `Licencia Copyleft Restrictiva: ${licName}`,
-              description: `El paquete "${
-                lic.PkgName ?? "N/A"
-              }" utiliza una licencia copyleft (${licName}). En software comercial cerrado, esto puede requerir la liberación del código fuente derivado.`,
-              file: lic.FilePath || target.Target,
-              package: lic.PkgName,
-              license: licName,
-              ruleId: "license-copyleft-risk",
-              raw: lic,
-            });
+            if (isCopyleft) {
+              counts.HIGH++;
+              findings.push({
+                id: `LICENSE-COPYLEFT-${counter++}`,
+                tool: this.name,
+                category: this.category,
+                severity: "HIGH",
+                title: `Licencia Copyleft Restrictiva: ${licName}`,
+                description: `El paquete "${
+                  lic.PkgName ?? "N/A"
+                }" utiliza una licencia copyleft (${licName}). En software comercial cerrado, esto puede requerir la liberación del código fuente derivado.`,
+                file: lic.FilePath || target.Target,
+                package: lic.PkgName,
+                license: licName,
+                ruleId: "license-copyleft-risk",
+                raw: lic,
+              });
+            }
           }
         }
+      } catch {
+        // Fall back to native scanner if trivy report was not produced or failed
+        return await this.runNativeFallback(config, startTime, counts);
       }
-    } catch {
-      // Fall back to native scanner if trivy report was not produced or failed
-      return await this.runNativeFallback(config, startTime, counts);
     }
 
     return {
@@ -233,7 +237,7 @@ export class LicenseScanner implements Scanner {
         }
       }
 
-      if (!hasRootLicense && config.requireLicense) {
+      if (config.scanLicenses && !hasRootLicense && config.requireLicense) {
         counts.LOW++;
         findings.push({
           id: `LICENSE-NATIVE-${counter++}`,
@@ -261,7 +265,7 @@ export class LicenseScanner implements Scanner {
             license: lic ?? rootLicenseType,
           });
 
-          if (lic && this.isCopyleft(lic)) {
+          if (config.scanLicenses && lic && this.isCopyleft(lic)) {
             counts.HIGH++;
             findings.push({
               id: `LICENSE-NATIVE-${counter++}`,
@@ -292,7 +296,7 @@ export class LicenseScanner implements Scanner {
             license: lic ?? rootLicenseType,
           });
 
-          if (lic && this.isCopyleft(lic)) {
+          if (config.scanLicenses && lic && this.isCopyleft(lic)) {
             counts.HIGH++;
             findings.push({
               id: `LICENSE-NATIVE-${counter++}`,
@@ -325,7 +329,7 @@ export class LicenseScanner implements Scanner {
               version: "1.0.0",
               license: lic,
             });
-            if (this.isCopyleft(lic)) {
+            if (config.scanLicenses && this.isCopyleft(lic)) {
               counts.HIGH++;
               findings.push({
                 id: `LICENSE-NATIVE-${counter++}`,
@@ -361,13 +365,13 @@ export class LicenseScanner implements Scanner {
               {
                 vendor: "GLASTOR-DEV",
                 name: "Nemesis Native SBOM Generator",
-                version: "1.1.0",
+                version: "1.3.0",
               },
             ],
             component: {
               type: "application",
               name: basename(Deno.cwd()),
-              version: "1.1.0",
+              version: "1.3.0",
               licenses: [{
                 license: {
                   id: rootLicenseType !== "Unknown" ? rootLicenseType : "MIT",

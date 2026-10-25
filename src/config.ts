@@ -74,6 +74,8 @@ export function loadConfig(cliArgs: string[]): NemesisConfig {
       "trivy-severity": "UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL",
       "max-file-size": "10",
       "diff-base": "origin/main",
+      sbom: true,
+      "pr-suggestions": true,
       verbose: false,
     },
   });

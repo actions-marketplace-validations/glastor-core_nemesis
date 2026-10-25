@@ -1,5 +1,5 @@
 import { join } from "@std/path";
-import { ensureDir } from "@std/fs";
+import { ensureDir, exists } from "@std/fs";
 import * as core from "@actions/core";
 import { loadConfig, showHelp } from "./config.ts";
 import {
@@ -102,7 +102,7 @@ async function main() {
   if (config.scanHygiene) {
     scanners.push(new HygieneScanner());
   }
-  if (config.scanLicenses) {
+  if (config.scanLicenses || config.generateSbom) {
     scanners.push(new LicenseScanner());
   }
 
@@ -222,7 +222,7 @@ async function main() {
   }
 
   const sbomReportPath = join(config.outputDir, "sbom.cyclonedx.json");
-  const sbomExists = config.generateSbom;
+  const sbomExists = (await exists(sbomReportPath)) && config.generateSbom;
 
   const report: AuditReport = {
     timestamp: new Date().toISOString(),

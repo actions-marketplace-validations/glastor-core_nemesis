@@ -41,8 +41,10 @@ Este proyecto se adhiere a:
 
 ### ✨ Added
 
-- feat(ci): automate semantic versioning on push and harden supply chain dependencies (`f930289`)
-- feat(core): release v1.2.1 with docker resilience and push protection (`ab3bddf`)
+- feat(ci): automate semantic versioning on push and harden supply chain
+  dependencies (`f930289`)
+- feat(core): release v1.2.1 with docker resilience and push protection
+  (`ab3bddf`)
 
 ---
 
